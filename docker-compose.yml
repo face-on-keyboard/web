@@ -1,0 +1,13 @@
+services:
+  postgres_db:
+    image: imresamu/postgis:16-3.5-alpine # Using a community built PostGIS image for arm64 support
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: web
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
