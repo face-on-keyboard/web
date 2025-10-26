@@ -29,5 +29,10 @@
 			"jsxQuoteStyle": "single",
 			"semicolons": "asNeeded"
 		}
+	},
+	"css": {
+		"formatter": {
+			"quoteStyle": "single"
+		}
 	}
 }

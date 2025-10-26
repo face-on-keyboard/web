@@ -1,9 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-	--font-sans: "PingFang TC",, var(--font-roboto), ui-sans-serif, system-ui,
-		sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-		"Noto Color Emoji";
+	--font-sans: 'PingFang TC',, var(--font-roboto), ui-sans-serif, system-ui,
+		sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+		'Noto Color Emoji';
 
 	--color-primary-50: #edf8fa;
 	--color-primary-100: #dbf1f5;
