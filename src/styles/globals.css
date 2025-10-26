@@ -1,79 +1,79 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
-  --font-sans: 'PingFang TC', , var(--font-roboto), ui-sans-serif, system-ui,
-    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
+	--font-sans: "PingFang TC",, var(--font-roboto), ui-sans-serif, system-ui,
+		sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+		"Noto Color Emoji";
 
-  --color-primary-50: #edf8fa;
-  --color-primary-100: #dbf1f5;
-  --color-primary-200: #b4e2ea;
-  --color-primary-300: #93d4df;
-  --color-primary-400: #71c5d5;
-  --color-primary-500: #5ab4c5;
-  --color-primary-600: #468d9b;
-  --color-primary-700: #356c77;
-  --color-primary-800: #22474e;
-  --color-primary-900: #112629;
-  --color-primary-950: #081315;
+	--color-primary-50: #edf8fa;
+	--color-primary-100: #dbf1f5;
+	--color-primary-200: #b4e2ea;
+	--color-primary-300: #93d4df;
+	--color-primary-400: #71c5d5;
+	--color-primary-500: #5ab4c5;
+	--color-primary-600: #468d9b;
+	--color-primary-700: #356c77;
+	--color-primary-800: #22474e;
+	--color-primary-900: #112629;
+	--color-primary-950: #081315;
 
-  --color-secondary-50: #fdf8ed;
-  --color-secondary-100: #fcf2df;
-  --color-secondary-200: #f8e3bc;
-  --color-secondary-300: #f4d69e;
-  --color-secondary-400: #f0c87c;
-  --color-secondary-500: #f5ba4b;
-  --color-secondary-600: #e7a43c;
-  --color-secondary-700: #ad7b2b;
-  --color-secondary-800: #74521b;
-  --color-secondary-900: #3c2b0b;
-  --color-secondary-950: #1c1304;
+	--color-secondary-50: #fdf8ed;
+	--color-secondary-100: #fcf2df;
+	--color-secondary-200: #f8e3bc;
+	--color-secondary-300: #f4d69e;
+	--color-secondary-400: #f0c87c;
+	--color-secondary-500: #f5ba4b;
+	--color-secondary-600: #e7a43c;
+	--color-secondary-700: #ad7b2b;
+	--color-secondary-800: #74521b;
+	--color-secondary-900: #3c2b0b;
+	--color-secondary-950: #1c1304;
 
-  --color-grey-50: #f1f3f4;
-  --color-grey-100: #e3e7e9;
-  --color-grey-200: #cad1d5;
-  --color-grey-300: #adb8be;
-  --color-grey-400: #91a0a8;
-  --color-grey-500: #738995;
-  --color-grey-600: #5e6d76;
-  --color-grey-700: #475259;
-  --color-grey-800: #30383d;
-  --color-grey-900: #171b1d;
-  --color-grey-950: #0b0d0e;
+	--color-grey-50: #f1f3f4;
+	--color-grey-100: #e3e7e9;
+	--color-grey-200: #cad1d5;
+	--color-grey-300: #adb8be;
+	--color-grey-400: #91a0a8;
+	--color-grey-500: #738995;
+	--color-grey-600: #5e6d76;
+	--color-grey-700: #475259;
+	--color-grey-800: #30383d;
+	--color-grey-900: #171b1d;
+	--color-grey-950: #0b0d0e;
 
-  --color-white: #ffffff;
+	--color-white: #ffffff;
 
-  --color-red-300: #e29494;
-  --color-red-500: #d45251;
+	--color-red-300: #e29494;
+	--color-red-500: #d45251;
 
-  --color-orange-300: #f4b992;
-  --color-orange-500: #fd853a;
+	--color-orange-300: #f4b992;
+	--color-orange-500: #fd853a;
 
-  --color-green-500: #76a732;
+	--color-green-500: #76a732;
 
-  --color-background: var(--color-white);
-  --color-background-muted: var(--color-grey-50);
+	--color-background: var(--color-white);
+	--color-background-muted: var(--color-grey-50);
 
-  --color-foreground-primary: var(--color-grey-800);
-  --color-foreground-secondary: var(--color-grey-700);
-  --color-foreground-muted: var(--color-grey-400);
+	--color-foreground-primary: var(--color-grey-800);
+	--color-foreground-secondary: var(--color-grey-700);
+	--color-foreground-muted: var(--color-grey-400);
 
-  --color-alarm: var(--color-red-500);
-  --color-alarm-hover: var(--color-red-300);
+	--color-alarm: var(--color-red-500);
+	--color-alarm-hover: var(--color-red-300);
 
-  --color-reminder: var(--color-orange-500);
-  --color-reminder-hover: var(--color-orange-300);
+	--color-reminder: var(--color-orange-500);
+	--color-reminder-hover: var(--color-orange-300);
 
-  --color-success: var(--color-green-500);
+	--color-success: var(--color-green-500);
 
-  --color-disabled: var(--color-grey-100);
+	--color-disabled: var(--color-grey-100);
 
-  --font-weight-regular: 400;
-  --font-weight-semibold: 600;
+	--font-weight-regular: 400;
+	--font-weight-semibold: 600;
 
-  --text-h1: 36px / 48px;
-  --text-h2: 24px / 32px;
-  --text-h3: 16px / 22px;
-  --text-body: 14px / 20px;
-  --text-caption: 12px / 18px;
+	--text-h1: 36px / 48px;
+	--text-h2: 24px / 32px;
+	--text-h3: 16px / 22px;
+	--text-body: 14px / 20px;
+	--text-caption: 12px / 18px;
 }
