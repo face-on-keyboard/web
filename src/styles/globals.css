@@ -71,9 +71,15 @@
   --font-weight-regular: 400;
   --font-weight-semibold: 600;
 
-  --text-h1: 36px / 48px;
-  --text-h2: 24px / 32px;
-  --text-h3: 16px / 22px;
-  --text-body: 14px / 20px;
-  --text-caption: 12px / 18px;
+  --text-h1: 36px;
+  --text-h1--line-height: 48px;
+  --text-h1--font-weight: var(--font-weight-semibold);
+  --text-h2: 24px;
+  --text-h2--line-height: 32px;
+  --text-h3: 16px;
+  --text-h3--line-height: 22px;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-caption: 12px;
+  --text-caption--line-height: 18px;
 }
