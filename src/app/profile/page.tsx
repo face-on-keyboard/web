@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 
 interface InvoiceAccount {
@@ -21,6 +21,58 @@ interface UserProfile {
   birthday: string
 }
 
+// 接口定義
+interface CarbonRecordItem {
+  name: string
+  amount: number
+  quantity: number
+  category: string
+  co2Amount: number
+}
+
+interface CarbonRecord {
+  id: string
+  invoiceNumber: string
+  date: string
+  storeName: string
+  totalAmount: number
+  category: string
+  totalCO2: number
+  items: CarbonRecordItem[]
+}
+
+// 類別常數
+const CARBON_CATEGORIES = [
+  { 
+    value: 'food', 
+    label: '食物', 
+    icon: '/icons/eat.svg',
+    iconType: 'image',
+    color: 'bg-green-100 text-green-700' 
+  },
+  { 
+    value: 'shopping', 
+    label: '購物', 
+    icon: '/icons/shopping.svg',
+    iconType: 'image',
+    color: 'bg-purple-100 text-purple-700' 
+  },
+  { 
+    value: 'transport', 
+    label: '交通', 
+    icon: '/icons/transport.svg',
+    iconType: 'image',
+    color: 'bg-blue-100 text-blue-700' 
+  },
+  { 
+    value: 'other', 
+    label: '其他', 
+    icon: '/icons/other.svg', 
+    iconType: 'image',
+    color: 'bg-grey-100 text-grey-700' 
+  },
+]
+
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
     agreeHealthData: false,
@@ -37,6 +89,12 @@ export default function ProfilePage() {
     type: 'success' | 'error' | null
     text: string
   }>({ type: null, text: '' })
+
+  // 最近紀錄相關狀態
+  const [records, setRecords] = useState<CarbonRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
 
   // 載入使用者資料
   useEffect(() => {
@@ -179,6 +237,93 @@ export default function ProfilePage() {
       window.removeEventListener('invoiceAccountUpdated', handleStorageChange)
     }
   }, [])
+
+  // 數據獲取函數
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await fetch('/api/invoices')
+      
+      if (!response.ok) {
+        throw new Error('無法獲取統一發票數據')
+      }
+      
+      const data = await response.json()
+      setRecords(data.records || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '發生未知錯誤')
+      console.error('Error fetching invoices:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // useEffect 來載入數據
+  useEffect(() => {
+    fetchInvoices()
+  }, [])
+
+  // 展開/收合功能
+  const toggleRecordExpansion = (recordId: string) => {
+    setExpandedRecords(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(recordId)) {
+        newSet.delete(recordId)
+      } else {
+        newSet.add(recordId)
+      }
+      return newSet
+    })
+  }
+
+  // 排序和過濾邏輯
+  const sortedRecords = useMemo(() => {
+    return [...records].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime()
+    })
+  }, [records])
+
+  // 只顯示最近三筆
+  const recentRecords = sortedRecords.slice(0, 3)
+  const hasMoreRecords = sortedRecords.length > 3
+
+  // 輔助函數
+  const getCategoryIconElement = (categoryValue: string, size: 'sm' | 'md' | 'lg' = 'md') => {
+    const category = CARBON_CATEGORIES.find(c => c.value === categoryValue)
+    if (!category) return <span className='text-lg'>📝</span>
+    
+    const sizeClasses = {
+      sm: 'h-4 w-4',
+      md: 'h-5 w-5',
+      lg: 'h-6 w-6',
+    }
+    
+    if (category.iconType === 'image') {
+      return (
+        <img 
+          src={category.icon} 
+          alt={category.label}
+          className={`${sizeClasses[size]} object-contain`}
+        />
+      )
+    }
+    
+    const emojiSizes = {
+      sm: 'text-base',
+      md: 'text-lg',
+      lg: 'text-xl',
+    }
+    return <span className={emojiSizes[size]}>{category.icon}</span>
+  }
+
+  const getCategoryLabel = (categoryValue: string) => {
+    return CARBON_CATEGORIES.find(c => c.value === categoryValue)?.label || categoryValue
+  }
+
+  const getCategoryColor = (categoryValue: string) => {
+    return CARBON_CATEGORIES.find(c => c.value === categoryValue)?.color || 'bg-grey-100 text-grey-700'
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
@@ -450,6 +595,76 @@ export default function ProfilePage() {
                   </div>
                 </>
               )}
+            </>
+          )}
+        </div>
+
+        {/* 最近紀錄區塊 */}
+        <div className='mt-6 rounded-lg bg-white p-4 shadow-sm'>
+          <div className='mb-3 flex items-center justify-between'>
+            <h2 className='text-lg font-semibold text-foreground-primary'>最近紀錄</h2>
+            <div className='flex items-center gap-2'>
+              {loading && (
+                <div className='text-xs text-foreground-muted'>載入中...</div>
+              )}
+              {!loading && hasMoreRecords && (
+                <Link
+                  href='/routes'
+                  className='rounded-lg bg-primary-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-700'
+                >
+                  查看全部 ({sortedRecords.length})
+                </Link>
+              )}
+            </div>
+          </div>
+          {loading && records.length === 0 ? (
+            <div className='py-8 text-center'>
+              <div className='mb-3 text-3xl animate-pulse'>📄</div>
+              <p className='text-sm text-foreground-muted'>正在載入統一發票數據...</p>
+            </div>
+          ) : sortedRecords.length === 0 ? (
+            <div className='py-8 text-center'>
+              <div className='mb-3 text-3xl'>📄</div>
+              <p className='text-sm text-foreground-muted'>尚無發票記錄</p>
+            </div>
+          ) : (
+            <>
+              <div className='space-y-2.5'>
+                {recentRecords.map((record) => {
+                  return (
+                    <div
+                      key={record.id}
+                      className='rounded-lg border border-grey-200 bg-white p-3 transition-colors hover:bg-grey-50'
+                    >
+                      <div className='flex items-start gap-3'>
+                        <div>
+                          {getCategoryIconElement(record.category, 'lg')}
+                        </div>
+                        <div className='flex-1 min-w-0'>
+                          <div className='mb-1.5 flex flex-wrap items-center gap-1.5'>
+                            <span className='text-sm font-semibold text-foreground-primary break-words'>
+                              {record.storeName}
+                            </span>
+                            <span className={`rounded-full px-1.5 py-0.5 text-xs ${getCategoryColor(record.category)}`}>
+                              {getCategoryLabel(record.category)}
+                            </span>
+                          </div>
+                          <div className='flex flex-wrap items-center gap-1.5 text-xs text-foreground-muted'>
+                            <span className='font-semibold text-foreground-primary'>
+                              NT$ {record.totalAmount.toLocaleString()}
+                            </span>
+                            <span>·</span>
+                            <span>{new Date(record.date).toLocaleDateString('zh-TW')}</span>
+                          </div>
+                        </div>
+                        <div className='text-base font-semibold text-primary-600'>
+                          {record.totalCO2.toFixed(2)} kg CO₂
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </>
           )}
         </div>

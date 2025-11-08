@@ -108,6 +108,17 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
       ],
       totalAmount: 550,
     },
+    {
+      id: '4',
+      invoiceNumber: 'GH45678901',
+      date: new Date(Date.now() - 259200000).toISOString().split('T')[0], // 三天前
+      storeName: 'SOGO 百貨',
+      items: [
+        { name: '服飾', amount: 1200, quantity: 2, category: 'shopping' },
+        { name: '化妝品', amount: 850, quantity: 1, category: 'shopping' },
+      ],
+      totalAmount: 2050,
+    },
   ]
 }
 
