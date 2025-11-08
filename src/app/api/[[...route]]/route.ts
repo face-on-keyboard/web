@@ -7,6 +7,7 @@ import { point, distance } from '@turf/turf'
 import { getTravelMode } from '@/lib/speed'
 import { locationSchema } from '@/lib/schemas'
 import { invoiceApi } from 'mock/client'
+import { invoiceToCarbonRecords } from './invoice-carbon'
 
 export const DEBUG_USER_EMAIL = 'john@example.com'
 
@@ -99,7 +100,7 @@ const routes = app
           throw new Error('無法獲取統一發票數據')
         }
 
-        return invoiceResponse.json()
+        return invoiceToCarbonRecords(await invoiceResponse.json())
       })
     )
 
