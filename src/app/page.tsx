@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useHealth } from '@/components/fetchers/health'
 import { useRecords } from '@/components/fetchers/records'
+import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
@@ -31,6 +32,18 @@ export default function HomePage() {
 
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
   const [testEmission, setTestEmission] = useState<number | null>(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  // 檢查是否已完成 onboarding
+  useEffect(() => {
+    // 只在客戶端執行
+    if (typeof window !== 'undefined') {
+      const onboardingCompleted = localStorage.getItem('onboardingCompleted')
+      if (onboardingCompleted !== 'true') {
+        setShowOnboarding(true)
+      }
+    }
+  }, [])
 
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecords((prev) => {
@@ -47,7 +60,12 @@ export default function HomePage() {
   const currentEmission = testEmission ?? dailyDelta.today
 
   return (
-    <main className='min-h-screen bg-blue-50/30 px-3 py-4'>
+    <>
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
+      <main className='min-h-screen bg-blue-50/30 px-3 py-4'>
         <div className='mx-auto max-w-sm'>
           <DashboardHeader />
           <WeeklyComparisonCard stats={weeklyStats} />
@@ -73,6 +91,7 @@ export default function HomePage() {
             hasMoreRecords={hasMoreRecords}
           />
         </div>
-    </main>
+      </main>
+    </>
   )
 }
