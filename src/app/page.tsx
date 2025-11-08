@@ -2,7 +2,6 @@
 
 import { useMessage } from '@/components/hooks/use-message'
 import { userInfoSchema } from '@/lib/events'
-import { useEffect } from 'react'
 
 export default function HomePage() {
   const {
