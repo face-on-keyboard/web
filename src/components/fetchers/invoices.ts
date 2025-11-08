@@ -17,9 +17,9 @@ export const useInvoices = () =>
 
       // Transform the invoice data to match the expected CarbonRecord structure
       const records: CarbonRecord[] = invoices.map((invoice) => ({
-        id: invoice.id.toString(),
+        id: `${invoice.invNum}-${invoice.invDate}`,
         invoiceNumber: invoice.invNum,
-        date: invoice.invDate || invoice.createdAt,
+        date: invoice.invDate,
         storeName: invoice.sellerName || '未知商店',
         totalAmount: Number(invoice.amount) || 0,
         category: 'other', // Default category, could be enhanced with categorization logic

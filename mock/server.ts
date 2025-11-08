@@ -1,7 +1,16 @@
 import { serve } from '@hono/node-server'
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { z } from 'zod/v4'
+import { z } from 'zod'
+import {
+  generateBan,
+  generateInvPeriod,
+  generateProductName,
+  generateTaiwanAddress,
+  generateTaiwanCompanyName,
+  generateTime,
+} from './faker'
+import { faker } from '@faker-js/faker'
 
 const getInvoiceSchema = z.object({
   version: z.literal('0.5').describe('版本號碼'),
@@ -15,11 +24,11 @@ const getInvoiceSchema = z.object({
     .string()
     .regex(/^\d{4}\/\d{2}\/\d{2}$/)
     .describe('發票日期(yyyy/MM/dd)'),
-  uuid: z.string(),
-  amount: z.string().optional(),
-  sellerName: z.string().optional(),
-  appID: z.string(),
-  cardEncrypt: z.string(),
+  uuid: z.string().describe('行動工具 Unique ID'),
+  sellerName: z.string().optional().describe('開立賣方名稱'),
+  amount: z.string().optional().describe('金額'),
+  appID: z.string().describe('透過財資中心申請之軟體 ID'),
+  cardEncrypt: z.string().describe('手機條碼驗證碼/卡片(載具)驗證碼'),
 })
 
 const InvoiceDetailSchema = z.object({
@@ -41,21 +50,95 @@ const InvoiceSchema = z.object({
   invStatus: z.string().describe('發票狀態'),
   invPeriod: z.string().describe('發票期別'),
   sellerBan: z.string().describe('賣方營業人統編'),
-  sellerAddress: z.string().describe('賣方營業人地址'),
+  sellerAddress: z.string().nullable().describe('賣方營業人地址'),
   invoiceTime: z.string().describe('發票開立時間 (HH:mm:ss)'),
-  buyerBan: z.string().describe('買方營業人統編'),
-  currency: z.string().describe('幣別'),
+  buyerBan: z.string().nullable().describe('買方營業人統編'),
+  currency: z.string().nullable().describe('幣別'),
   details: z.array(InvoiceDetailSchema).describe('發票明細'),
 })
 
+export type Invoice = z.infer<typeof InvoiceSchema>
+
 const app = new Hono()
-app.get(
-  '/PB2CAPIVAN/invServ/InvServ',
-  zValidator('param', getInvoiceSchema),
-  (c) => c.json({ hello: 'world' })
-)
+
+const route = app
+  .onError((err, c) => {
+    console.error(err)
+    return c.json(err)
+  })
+  .post(
+    '/PB2CAPIVAN/invServ/InvServ',
+    zValidator('form', getInvoiceSchema),
+    (c) => {
+      const params = c.req.valid('form')
+      faker.seed(Number(params.invNum)) // Set seed for reproducibility
+
+      const invDate = faker.date.recent({ days: 365 })
+      const invPeriod = generateInvPeriod(invDate)
+
+      const detailCount = faker.number.int({ min: 1, max: 5 })
+
+      const totalAmount = faker.number.float({
+        min: 10,
+        max: 10000,
+        fractionDigits: 2,
+      })
+
+      const invoice: Invoice = {
+        v: params.version,
+        code: '200',
+        msg: '成功',
+        invNum: params.invNum,
+        invDate: `${invDate.getFullYear().toString()}/${invDate
+          .getMonth()
+          .toString()
+          .padStart(2, '0')}/${invDate.getDate().toString().padStart(2, '0')}`,
+        sellerName: generateTaiwanCompanyName(),
+        amount: totalAmount.toFixed(2),
+        invStatus: faker.helpers.arrayElement(['已開立', '已作廢', '已折讓']),
+        invPeriod,
+        sellerBan: generateBan(),
+        sellerAddress: faker.datatype.boolean(0.8)
+          ? generateTaiwanAddress()
+          : null,
+        invoiceTime: generateTime(),
+        buyerBan: faker.datatype.boolean(0.3) ? generateBan() : null, // 買方營業人統編（30% 機率有）
+        currency: faker.datatype.boolean(0.9)
+          ? 'TWD'
+          : faker.helpers.arrayElement(['USD', 'EUR', 'JPY']), // 幣別（90% 是台幣）
+        details: Array.from({ length: detailCount }, (_, i) => {
+          const quantity = faker.number.float({
+            min: 1,
+            max: 10,
+            fractionDigits: 2,
+          })
+          const unitPrice = faker.number.float({
+            min: 10,
+            max: 1000,
+            fractionDigits: 2,
+          })
+
+          return {
+            rowNum: (i + 1).toString(),
+            description: generateProductName(),
+            quantity: quantity.toString(),
+            unitPrice: unitPrice.toString(),
+            amount: Number.parseFloat(
+              (quantity * unitPrice).toFixed(2)
+            ).toString(),
+          }
+        }),
+      }
+
+      console.log(invoice)
+
+      return c.json(invoice)
+    }
+  )
 
 serve({
   fetch: app.fetch,
   port: 3001,
 })
+
+export type InvoiceAPI = typeof route

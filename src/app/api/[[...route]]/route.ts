@@ -6,6 +6,7 @@ import { db } from '@/server/db'
 import { point, distance } from '@turf/turf'
 import { getTravelMode } from '@/lib/speed'
 import { locationSchema } from '@/lib/schemas'
+import { invoiceApi } from 'mock/client'
 
 export const DEBUG_USER_EMAIL = 'john@example.com'
 
@@ -65,15 +66,45 @@ const routes = app
     return c.json(success(createdSegment))
   })
   .get('/invoices', async (c) => {
-    const invoices = await db.invoice.findMany({
-      include: {
-        details: true,
-      },
-    })
+    const invoiceNumbers = [
+      'AB12345678',
+      'CD87654321',
+      'EF11223344',
+      'GH44332211',
+      'IJ55667788',
+    ]
+
+    const invoices = await Promise.all(
+      invoiceNumbers.map(async (invNum) => {
+        const invoiceResponse =
+          await invoiceApi.PB2CAPIVAN.invServ.InvServ.$post({
+            form: {
+              version: '0.5',
+              action: 'carrierInvDetail',
+              timeStamp: new Date().toISOString(),
+              invNum,
+              invDate: '2023/01/01',
+              appID: 'TESTAPPID',
+              cardType: '3J0002',
+              cardNo: '1234567890',
+              expTimeStamp: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+              ).toISOString(),
+              uuid: 'TESTUUID',
+              cardEncrypt: 'TESTCARDENCRYPT',
+            },
+          })
+
+        if (!invoiceResponse.ok) {
+          throw new Error('無法獲取統一發票數據')
+        }
+
+        return invoiceResponse.json()
+      })
+    )
 
     return c.json(success(invoices))
   })
-
 export const GET = handle(app)
 export const PUT = handle(app)
 
