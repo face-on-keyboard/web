@@ -1,28 +1,21 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
-import {
-  buildDailyTotals,
-  calculateDailyDelta,
-  useInvoices,
-} from '@/components/fetchers/invoices'
+import { useHealth } from '@/components/fetchers/health'
+import { useRecords } from '@/components/fetchers/records'
 import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
 import { ErrorBanner } from '../components/dashboard/ErrorBanner'
 import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
-import { deriveCategoryStats } from '../components/dashboard/constants'
-import { useRecords } from '@/components/fetchers/records'
-import { useHealth } from '@/components/fetchers/health'
 
 export default function HomePage() {
   const {
     records,
     loading,
     error,
-    dailyTotals,
     dailyDelta,
     sortedRecords,
     recentRecords,
