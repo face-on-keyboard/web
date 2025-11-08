@@ -10,9 +10,7 @@ export const DashboardHeader = () => {
       <h1 className='mb-1 font-semibold text-foreground-primary text-h2'>
         減碳Dashboard
       </h1>
-      <p className='text-body text-foreground-secondary'>
-        快來查看你的減碳成績
-      </p>
+      
     </div>
   )
 }
