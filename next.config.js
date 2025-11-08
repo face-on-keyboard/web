@@ -6,10 +6,10 @@ import './src/env.js'
 
 /** @type {import("next").NextConfig} */
 const config = {
-  output: 'standalone',
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+	output: 'standalone',
+	typescript: {
+		ignoreBuildErrors: true,
+	},
 }
 
 export default config
