@@ -6,12 +6,14 @@ import { z, type ZodType } from 'zod/v4'
 
 export function useMessage<T>({
   name,
+  payload,
   validator,
   onMessage,
   onError,
   sendOnLoad = false,
 }: {
   name: string
+  payload?: unknown
   validator: ZodType<T>
   onMessage?: (data: T) => void
   onError?: (error: unknown) => void
@@ -77,12 +79,15 @@ export function useMessage<T>({
     if (sendOnLoad) {
       send()
     }
-  }, [sendOnLoad])
+  }, [payload, sendOnLoad])
 
-  function send<T>(payload?: { data?: T }) {
+  function send(payloadOverride?: unknown) {
     // @ts-ignore
     if (typeof flutterObject !== 'undefined' && flutterObject) {
-      const body = JSON.stringify({ name, data: payload?.data })
+      const body = JSON.stringify({
+        name,
+        data: payloadOverride ?? payload,
+      })
 
       setLoading(true)
 
