@@ -13,9 +13,7 @@ import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
 import { ErrorBanner } from '../components/dashboard/ErrorBanner'
 import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
-import { SummaryStatCards } from '../components/dashboard/SummaryStatCards'
 import { deriveCategoryStats } from '../components/dashboard/constants'
-import { useMockCarbonData } from '../components/dashboard/hooks/useMockCarbonData'
 
 export default function HomePage() {
   const { data: records, isLoading: loading, error } = useInvoices()
@@ -141,7 +139,10 @@ export default function HomePage() {
         />
         {error && <ErrorBanner message={error.message} />}
         {/* <SummaryStatCards totalCO2={totalCO2} recordsCount={records.length} /> */}
-        <CategoryBreakdown categoryStats={categoryStats} totalCO2={totalCO2 ?? 0} />
+        <CategoryBreakdown
+          categoryStats={categoryStats}
+          totalCO2={totalCO2 ?? 0}
+        />
         <RecentRecords
           loading={loading}
           records={records ?? []}
