@@ -47,7 +47,7 @@ export default function HomePage() {
     })
   }
 
-  const currentEmission = testEmission ?? dailyDelta.today
+  const currentEmission = testEmission ?? weeklyStats.currentWeek
 
   const { width, height } = useWindowSize()
 
@@ -60,7 +60,7 @@ export default function HomePage() {
           <WeeklyComparisonCard stats={weeklyStats} />
           <EarthStatusPanel
             emissionValue={currentEmission}
-            baseEmission={dailyDelta.today}
+            baseEmission={weeklyStats.currentWeek}
             testEmission={testEmission}
             onTestEmissionChange={setTestEmission}
           />
