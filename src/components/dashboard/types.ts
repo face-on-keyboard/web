@@ -1,18 +1,3 @@
-export type CarbonRecordBase = {
-  id: string
-  totalEmissions: number
-} & (
-  | {
-      type: 'invoice'
-      totalAmount: number
-      invoiceNumber: string
-    }
-  | {
-      type: 'segment'
-      segmentName: string
-    }
-)
-
 export interface CarbonRecordItem {
   name: string
   amount: number
@@ -50,17 +35,9 @@ export interface DailyCarbonDelta {
   isIncrease: boolean
 }
 
-export interface DailyGoalProgress {
-  target: number
-  value: number
-  percentage: number
-  isOverTarget: boolean
-}
-
 export interface MockCarbonData {
   records: CarbonRecord[]
   loading: boolean
   error: string | null
   dailyDelta: DailyCarbonDelta
-  dailyGoal: DailyGoalProgress
 }

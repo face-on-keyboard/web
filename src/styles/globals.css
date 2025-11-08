@@ -85,3 +85,101 @@
 
   --breakpoint-md: 390px;
 }
+
+@keyframes earth-sway {
+  0% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes earth-pulse {
+  0% {
+    transform: scale(0.98);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes earth-pulse-strong {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(0.95);
+  }
+}
+
+@keyframes earth-shiver {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes earth-shake {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(-3px, 2px) rotate(-1deg);
+  }
+  40% {
+    transform: translate(3px, -2px) rotate(1deg);
+  }
+  60% {
+    transform: translate(-3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(3px, -1px) rotate(1deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.animate-earth-sway {
+  animation: earth-sway 6s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.animate-earth-pulse {
+  animation: earth-pulse 4s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.animate-earth-pulse-strong {
+  animation: earth-pulse-strong 3s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.animate-earth-shiver {
+  animation: earth-shiver 0.8s ease-in-out infinite;
+}
+
+.animate-earth-shake {
+  animation: earth-shake 0.6s ease-in-out infinite;
+}
