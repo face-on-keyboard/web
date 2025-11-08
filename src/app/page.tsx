@@ -1,6 +1,8 @@
+'use client'
+
 export default function HomePage() {
   return (
-    <main className='flex min-h-screen flex-col items-center justify-center bg-background-muted text-black'>
+    <main className='flex h-(--screen-height-mobile) flex-col items-center justify-center'>
       <h1 className='text-h1'>H1</h1>
       <h2 className='text-h2'>H2</h2>
       <h3 className='text-h3'>H3</h3>

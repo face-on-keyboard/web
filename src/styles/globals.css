@@ -82,4 +82,6 @@
   --text-body--line-height: 20px;
   --text-caption: 12px;
   --text-caption--line-height: 18px;
+
+  --breakpoint-md: 390px;
 }
