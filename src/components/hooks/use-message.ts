@@ -15,7 +15,7 @@ export function useMessage<T>({
   validator: ZodType<T>
   onMessage?: (data: T) => void
   onError?: (error: unknown) => void
-  sendOnLoad?: boolean
+  sendOnLoad?: boolean | unknown
 }) {
   const [data, setData] = useState<T>()
   const [error, setError] = useState<unknown>()
@@ -75,7 +75,8 @@ export function useMessage<T>({
 
   useEffect(() => {
     if (sendOnLoad) {
-      send()
+      if (typeof sendOnLoad === 'boolean') send()
+      else send(sendOnLoad)
     }
   }, [sendOnLoad])
 
