@@ -11,6 +11,7 @@ import {
   generateTime,
 } from './faker'
 import { faker } from '@faker-js/faker'
+import { stringToNumberHash } from '@/lib/hash'
 
 const getInvoiceSchema = z.object({
   version: z.literal('0.5').describe('版本號碼'),
@@ -71,7 +72,7 @@ const route = app
     zValidator('form', getInvoiceSchema),
     (c) => {
       const params = c.req.valid('form')
-      faker.seed(Number(params.invNum)) // Set seed for reproducibility
+      faker.seed(stringToNumberHash(params.invNum)) // Set seed for reproducibility
 
       const invDate = faker.date.recent({ days: 365 })
       const invPeriod = generateInvPeriod(invDate)
