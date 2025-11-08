@@ -25,6 +25,14 @@ export interface MonthlyStats {
 	isIncrease: boolean
 }
 
+export interface WeeklyStats {
+	currentWeek: number
+	lastWeek: number
+	difference: number
+	percentage: number
+	isIncrease: boolean
+}
+
 export type CategoryColor = string
 
 export interface DailyCarbonDelta {

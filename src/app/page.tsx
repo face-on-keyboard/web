@@ -8,9 +8,8 @@ import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
 import { ErrorBanner } from '../components/dashboard/ErrorBanner'
-import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparisonCard'
+import { WeeklyComparisonCard } from '../components/dashboard/WeeklyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
-import { useUser } from '@/components/fetchers/user'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'usehooks-ts'
 
@@ -25,7 +24,7 @@ export default function HomePage() {
     hasMoreRecords,
     totalCO2,
     categoryStats,
-    monthlyStats,
+    weeklyStats,
   } = useRecords()
 
   const { health } = useHealth()
@@ -57,7 +56,7 @@ export default function HomePage() {
       <main className='min-h-screen px-3 py-4'>
         <div className='mx-auto max-w-sm'>
           <DashboardHeader />
-          <MonthlyComparisonCard stats={monthlyStats} />
+          <WeeklyComparisonCard stats={weeklyStats} />
           <EarthStatusPanel
             emissionValue={currentEmission}
             baseEmission={dailyDelta.today}

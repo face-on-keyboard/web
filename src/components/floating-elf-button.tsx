@@ -1,14 +1,15 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export function FloatingElfButton() {
+	const router = useRouter()
 	const [isHovered, setIsHovered] = useState(false)
 
 	const handleClick = () => {
-		// TODO: 添加點擊事件處理邏輯
-		console.log('Elf button clicked')
+		router.push('/chat')
 	}
 
 	return (

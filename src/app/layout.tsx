@@ -2,7 +2,7 @@ import { ReactQueryProvider } from '@/components/providers/react-query'
 import '@/styles/globals.css'
 import { Home, MapIcon, User } from 'lucide-react'
 
-import { FloatingElfButton } from '@/components/floating-elf-button'
+import { ConditionalFloatingComponents } from '@/components/ConditionalFloatingComponents'
 import type { Metadata, Viewport } from 'next'
 import { Roboto } from 'next/font/google'
 import Link from 'next/link'
@@ -66,7 +66,7 @@ export default function RootLayout({
           <div className='min-h-[calc(100svh-var(--mobile-bar-full-height))] max-w-md bg-linear-to-tr from-primary-50 via-white to-secondary-100 text-black'>
             {children}
           </div>
-          <FloatingElfButton />
+          <ConditionalFloatingComponents />
 
           <div className='sticky bottom-0 flex h-(--mobile-bar-full-height) items-center justify-between border-primary-400 border-t-2 bg-primary-500 px-15 pb-2 text-white'>
             {navItems.map((item) => (

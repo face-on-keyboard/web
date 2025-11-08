@@ -180,6 +180,57 @@ export function useRecords(options?: {
 			.reduce((sum, record) => sum + record.totalCO2, 0)
 	}, [records])
 
+	const lastWeekCO2 = useMemo(() => {
+		const now = new Date()
+		const dayOfWeek = now.getDay() // 0 = 星期日, 1 = 星期一, ...
+		const startOfWeek = new Date(now)
+		startOfWeek.setDate(now.getDate() - dayOfWeek) // 設定為本週第一天（星期日）
+		startOfWeek.setHours(0, 0, 0, 0)
+
+		// 上週的開始和結束時間
+		const startOfLastWeek = new Date(startOfWeek)
+		startOfLastWeek.setDate(startOfWeek.getDate() - 7) // 上週第一天
+		startOfLastWeek.setHours(0, 0, 0, 0)
+
+		const endOfLastWeek = new Date(startOfLastWeek)
+		endOfLastWeek.setDate(startOfLastWeek.getDate() + 6) // 上週最後一天
+		endOfLastWeek.setHours(23, 59, 59, 999)
+
+		const formatDate = (date: Date): string => {
+			const year = date.getFullYear()
+			const month = String(date.getMonth() + 1).padStart(2, '0')
+			const day = String(date.getDate()).padStart(2, '0')
+			return `${year}-${month}-${day}`
+		}
+
+		const startStr = formatDate(startOfLastWeek)
+		const endStr = formatDate(endOfLastWeek)
+
+		return records
+			?.filter((record) => {
+				const recordDate = record.date
+				return recordDate >= startStr && recordDate <= endStr
+			})
+			.reduce((sum, record) => sum + record.totalCO2, 0)
+	}, [records])
+
+	const weeklyStats = useMemo(() => {
+		const currentWeekCO2 = weeklyCO2 ?? 0
+		const lastWeekTotal = lastWeekCO2 ?? 0
+
+		const difference = currentWeekCO2 - lastWeekTotal
+		const percentage =
+			lastWeekTotal > 0 ? (difference / lastWeekTotal) * 100 : 0
+
+		return {
+			currentWeek: currentWeekCO2,
+			lastWeek: lastWeekTotal,
+			difference,
+			percentage,
+			isIncrease: difference > 0,
+		}
+	}, [weeklyCO2, lastWeekCO2])
+
 	return {
 		records,
 		loading,
@@ -193,5 +244,7 @@ export function useRecords(options?: {
 		categoryStats,
 		monthlyStats,
 		weeklyCO2,
+		lastWeekCO2,
+		weeklyStats,
 	}
 }
