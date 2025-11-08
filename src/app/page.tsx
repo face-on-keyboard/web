@@ -4,12 +4,15 @@ import { useState } from 'react'
 
 import { useHealth } from '@/components/fetchers/health'
 import { useRecords } from '@/components/fetchers/records'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'usehooks-ts'
 import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
 import { ErrorBanner } from '../components/dashboard/ErrorBanner'
-import { WeeklyComparisonCard } from '../components/dashboard/WeeklyComparisonCard'
+import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
+import { WeeklyComparisonCard } from '@/components/dashboard/WeeklyComparisonCard'
 
 export default function HomePage() {
   const {
@@ -46,8 +49,12 @@ export default function HomePage() {
 
   const currentEmission = testEmission ?? dailyDelta.today
 
+  const { width, height } = useWindowSize()
+
   return (
-    <main className='min-h-screen bg-blue-50/30 px-3 py-4'>
+    <>
+      <Confetti width={width} height={height} recycle={false} />
+      <main className='min-h-screen px-3 py-4'>
         <div className='mx-auto max-w-sm'>
           <DashboardHeader />
           <WeeklyComparisonCard stats={weeklyStats} />
@@ -73,6 +80,7 @@ export default function HomePage() {
             hasMoreRecords={hasMoreRecords}
           />
         </div>
-    </main>
+      </main>
+    </>
   )
 }

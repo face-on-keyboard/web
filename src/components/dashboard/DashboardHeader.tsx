@@ -8,9 +8,11 @@ export const DashboardHeader = () => {
   return (
     <div className='mt-2 mb-6'>
       <h1 className='mb-1 font-semibold text-foreground-primary text-h2'>
-        減碳Dashboard
+        歡迎回來，{user?.realName || '使用者'}！
       </h1>
-      
+      <p className='text-body text-foreground-secondary'>
+        快來查看你的減碳成績
+      </p>
     </div>
   )
 }
