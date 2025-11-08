@@ -1,7 +1,7 @@
 'use client'
 
 import { stringToJSONSchema } from '@/lib/zod'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { z, type ZodType } from 'zod/v4'
 
 export function useMessage<T>({
@@ -15,7 +15,7 @@ export function useMessage<T>({
   validator: ZodType<T>
   onMessage?: (data: T) => void
   onError?: (error: unknown) => void
-  sendOnLoad?: boolean
+  sendOnLoad?: boolean | unknown
 }) {
   const [data, setData] = useState<T>()
   const [error, setError] = useState<unknown>()
@@ -61,35 +61,50 @@ export function useMessage<T>({
     }
   }, [name, validator])
 
-  useEffect(() => {
-    if (onMessage && data) {
-      onMessage(data)
-    }
-  }, [data, onMessage])
+  const onMessageRef = useRef(onMessage)
+  const onErrorRef = useRef(onError)
 
   useEffect(() => {
-    if (onError && error) {
-      onError(error)
+    onMessageRef.current = onMessage
+  }, [onMessage])
+
+  useEffect(() => {
+    onErrorRef.current = onError
+  }, [onError])
+
+  useEffect(() => {
+    if (onMessageRef.current && data) {
+      onMessageRef.current(data)
     }
-  }, [error, onError])
+  }, [data])
+
+  useEffect(() => {
+    if (onErrorRef.current && error) {
+      onErrorRef.current(error)
+    }
+  }, [error])
 
   useEffect(() => {
     if (sendOnLoad) {
-      send()
+      if (typeof sendOnLoad === 'boolean') send()
+      else send(sendOnLoad)
     }
   }, [sendOnLoad])
 
-  function send<T>(payload?: { data?: T }) {
-    // @ts-ignore
-    if (typeof flutterObject !== 'undefined' && flutterObject) {
-      const body = JSON.stringify({ name, data: payload?.data })
-
-      setLoading(true)
-
+  const send = useCallback(
+    <T>(payload?: { data?: T }) => {
       // @ts-ignore
-      flutterObject.postMessage(body)
-    }
-  }
+      if (typeof flutterObject !== 'undefined' && flutterObject) {
+        const body = JSON.stringify({ name, data: payload?.data })
+
+        setLoading(true)
+
+        // @ts-ignore
+        flutterObject.postMessage(body)
+      }
+    },
+    [name]
+  )
 
   return {
     data,
