@@ -18,3 +18,18 @@ model Post {
 
     @@index([name])
 }
+
+model CarbonRecord {
+    id          String   @id @default(cuid())
+    category    String   // 類別：交通、能源、食物等
+    description String   // 描述
+    amount      Float    // 數量
+    unit        String   // 單位：kg, km, kWh等
+    co2Amount   Float    // 二氧化碳排放量（kg CO2）
+    date        DateTime @default(now()) // 記錄日期
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@index([date])
+    @@index([category])
+}
