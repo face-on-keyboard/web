@@ -48,7 +48,7 @@ export default function HomePage() {
   const currentEmission = testEmission ?? dailyDelta.today
 
   return (
-    <main className='min-h-screen bg-background-muted px-3 py-4'>
+    <main className='min-h-screen px-3 py-4'>
       <div className='mx-auto max-w-sm'>
         <DashboardHeader />
         <MonthlyComparisonCard stats={monthlyStats} />
