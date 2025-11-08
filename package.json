@@ -19,8 +19,11 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@hono/zod-validator": "^0.7.4",
 		"@prisma/client": "^6.5.0",
 		"@t3-oss/env-nextjs": "^0.12.0",
+		"@tanstack/react-query": "^5.90.7",
+		"@turf/turf": "^7.2.0",
 		"@types/geojson": "^7946.0.16",
 		"@vis.gl/react-maplibre": "^8.1.0",
 		"date-fns": "^4.1.0",
@@ -30,6 +33,7 @@
 		"next": "^15.2.3",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
+		"usehooks-ts": "^3.1.1",
 		"zod": "^3.24.2"
 	},
 	"devDependencies": {
