@@ -30,7 +30,7 @@ export default function RecordsPage() {
 	}
 
 	return (
-		<main className='min-h-screen bg-background-muted px-3 py-4'>
+		<main className='min-h-screen bg-blue-50/30 px-3 py-4'>
 			<div className='mx-auto max-w-sm'>
 				{/* 標題區域 */}
 				<div className='mb-4 flex items-center justify-between'>

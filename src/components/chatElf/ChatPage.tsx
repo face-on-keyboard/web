@@ -106,7 +106,7 @@ export function ChatPage() {
 	const shouldShowMenu = currentState === 'menu' && lastMessage?.menuItems
 
 	return (
-		<div className='flex h-[calc(100svh-var(--mobile-bar-full-height))] flex-col bg-background-muted'>
+		<div className='flex h-[calc(100svh-var(--mobile-bar-full-height))] flex-col bg-blue-50/30'>
 			{/* 頂部標題欄 */}
 			<div className='flex items-center gap-3 border-b border-grey-200 bg-white px-4 py-3 shadow-sm'>
 				<button

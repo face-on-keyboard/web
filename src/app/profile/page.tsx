@@ -350,10 +350,17 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className='min-h-screen px-3 py-4'>
+    <main className='min-h-screen bg-blue-50/30 px-3 py-4'>
       <div className='mx-auto max-w-sm'>
+        {/* 頁面標題 */}
+        <div className='mb-6'>
+          <h1 className='font-semibold text-foreground-primary text-h2'>
+            個人資料
+          </h1>
+        </div>
+
         {/* 使用者資訊區塊 */}
-        <div className='mb-6 rounded-lg p-4'>
+        <div className='mb-6 rounded-lg bg-white p-4 shadow-sm'>
           {isLoadingProfile ? (
             <div className='py-4 text-center text-body text-foreground-muted'>
               載入中...
@@ -384,6 +391,50 @@ export default function ProfilePage() {
           ) : (
             <div className='py-4 text-center text-body text-foreground-muted'>
               尚未設定個人資料
+            </div>
+          )}
+        </div>
+
+        {/* 統一發票帳戶資訊區塊 */}
+        <div className='mb-6 rounded-lg bg-white p-4 shadow-sm'>
+          <h2 className='mb-4 text-foreground-primary text-h3'>
+            統一發票帳戶資訊
+          </h2>
+
+          {isLoadingAccount ? (
+            <div className='py-4 text-center text-body text-foreground-muted'>
+              載入中...
+            </div>
+          ) : invoiceAccount?.invoiceAccount ? (
+            <div className='space-y-3'>
+              <div className='rounded-lg border border-grey-200 bg-grey-50 p-3'>
+                <div className='mb-1 text-foreground-muted text-xs'>
+                  發票帳號
+                </div>
+                <div className='font-semibold text-body text-foreground-primary'>
+                  {maskAccount(invoiceAccount.invoiceAccount)}
+                </div>
+              </div>
+              <Link
+                href='/profile/invoice/edit'
+                className='flex w-full items-center justify-center rounded-lg border-2 border-grey-300 border-solid bg-white px-4 py-3 font-semibold text-body text-foreground-primary transition-colors hover:border-primary-500 hover:bg-primary-50'
+              >
+                編輯發票資訊
+              </Link>
+            </div>
+          ) : (
+            <div className='space-y-3'>
+              <div className='rounded-lg border border-grey-200 bg-grey-50 p-3 text-center'>
+                <div className='text-body text-foreground-muted'>
+                  請編輯發票資訊
+                </div>
+              </div>
+              <Link
+                href='/profile/invoice/edit'
+                className='flex w-full items-center justify-center rounded-lg border-2 border-grey-300 border-solid bg-white px-4 py-3 font-semibold text-body text-foreground-primary transition-colors hover:border-primary-500 hover:bg-primary-50'
+              >
+                編輯發票資訊
+              </Link>
             </div>
           )}
         </div>
@@ -612,52 +663,6 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
-      {/* 表單 */}
-      <form onSubmit={handleSubmit} className='my-6 space-y-6'>
-        {/* 發票帳戶資訊區塊 */}
-        <div className='rounded-lg bg-white p-4 shadow-sm'>
-          <h2 className='mb-4 text-foreground-primary text-h3'>
-            統一發票帳戶資訊
-          </h2>
-
-          {isLoadingAccount ? (
-            <div className='py-4 text-center text-body text-foreground-muted'>
-              載入中...
-            </div>
-          ) : invoiceAccount?.invoiceAccount ? (
-            <div className='space-y-3'>
-              <div className='rounded-lg border border-grey-200 bg-grey-50 p-3'>
-                <div className='mb-1 text-foreground-muted text-xs'>
-                  發票帳號
-                </div>
-                <div className='font-semibold text-body text-foreground-primary'>
-                  {maskAccount(invoiceAccount.invoiceAccount)}
-                </div>
-              </div>
-              <Link
-                href='/profile/invoice/edit'
-                className='flex w-full items-center justify-center rounded-lg border-2 border-grey-300 border-solid bg-white px-4 py-3 font-semibold text-body text-foreground-primary transition-colors hover:border-primary-500 hover:bg-primary-50'
-              >
-                編輯發票資訊
-              </Link>
-            </div>
-          ) : (
-            <div className='space-y-3'>
-              <div className='rounded-lg border border-grey-200 bg-grey-50 p-3 text-center'>
-                <div className='text-body text-foreground-muted'>
-                  請編輯發票資訊
-                </div>
-              </div>
-              <Link
-                href='/profile/invoice/edit'
-                className='flex w-full items-center justify-center rounded-lg border-2 border-grey-300 border-solid bg-white px-4 py-3 font-semibold text-body text-foreground-primary transition-colors hover:border-primary-500 hover:bg-primary-50'
-              >
-                編輯發票資訊
-              </Link>
-            </div>
-          )}
-        </div>
-      </form>
     </main>
   )
 }

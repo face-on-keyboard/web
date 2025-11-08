@@ -10,8 +10,6 @@ import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
 import { ErrorBanner } from '../components/dashboard/ErrorBanner'
 import { WeeklyComparisonCard } from '../components/dashboard/WeeklyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
-import Confetti from 'react-confetti'
-import { useWindowSize } from 'usehooks-ts'
 
 export default function HomePage() {
   const {
@@ -48,12 +46,8 @@ export default function HomePage() {
 
   const currentEmission = testEmission ?? dailyDelta.today
 
-  const { width, height } = useWindowSize()
-
   return (
-    <>
-      <Confetti width={width} height={height} recycle={false} />
-      <main className='min-h-screen px-3 py-4'>
+    <main className='min-h-screen bg-blue-50/30 px-3 py-4'>
         <div className='mx-auto max-w-sm'>
           <DashboardHeader />
           <WeeklyComparisonCard stats={weeklyStats} />
@@ -79,7 +73,6 @@ export default function HomePage() {
             hasMoreRecords={hasMoreRecords}
           />
         </div>
-      </main>
-    </>
+    </main>
   )
 }
