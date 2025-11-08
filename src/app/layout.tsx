@@ -3,7 +3,7 @@ import '@/styles/globals.css'
 import { Home, MapIcon, User } from 'lucide-react'
 
 import { FloatingElfButton } from '@/components/floating-elf-button'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Roboto } from 'next/font/google'
 import Link from 'next/link'
 
@@ -16,6 +16,14 @@ const roboto = Roboto({
   subsets: ['latin'],
   variable: '--font-roboto',
 })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
 
 export default function RootLayout({
   children,
