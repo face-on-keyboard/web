@@ -47,8 +47,19 @@ function calculateCO2FromAmount(amount: number, category: string): number {
     other: 0.05,     // 每元約 0.05kg CO2
   }
   
-  const factor = factors[category] || factors.other
+  const factor = factors[category] ?? factors.other ?? 0.05
   return Number((amount * factor).toFixed(2))
+}
+
+// 輔助函數：將日期轉換為 YYYY-MM-DD 格式
+function formatDate(date: Date): string {
+  const isoString = date.toISOString()
+  const datePart = isoString.split('T')[0]
+  if (!datePart) {
+    // 如果意外發生，返回當前日期
+    return new Date().toISOString().split('T')[0] || ''
+  }
+  return datePart
 }
 
 // 模擬統一發票 API 數據
@@ -66,7 +77,7 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
     {
       id: '1',
       invoiceNumber: 'AB12345678',
-      date: new Date().toISOString().split('T')[0],
+      date: formatDate(new Date()),
       storeName: '7-ELEVEN 便利商店',
       items: [
         { name: '咖啡', amount: 45, quantity: 1, category: 'food' },
@@ -77,7 +88,7 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
     {
       id: '2',
       invoiceNumber: 'CD23456789',
-      date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // 昨天
+      date: formatDate(new Date(Date.now() - 86400000)), // 昨天
       storeName: '全聯福利中心',
       items: [
         { name: '生鮮食品', amount: 350, quantity: 1, category: 'food' },
@@ -88,7 +99,7 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
     {
       id: '3',
       invoiceNumber: 'EF34567890',
-      date: new Date(Date.now() - 172800000).toISOString().split('T')[0], // 兩天前
+      date: formatDate(new Date(Date.now() - 172800000)), // 兩天前
       storeName: '家樂福',
       items: [
         { name: '生活用品', amount: 450, quantity: 1, category: 'shopping' },
@@ -99,7 +110,7 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
     {
       id: '4',
       invoiceNumber: 'GH45678901',
-      date: new Date(Date.now() - 259200000).toISOString().split('T')[0], // 三天前
+      date: formatDate(new Date(Date.now() - 259200000)), // 三天前
       storeName: '誠品書店',
       items: [
         { name: '書籍', amount: 380, quantity: 1 },
@@ -110,7 +121,7 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
     {
       id: '5',
       invoiceNumber: 'IJ56789012',
-      date: new Date(Date.now() - 345600000).toISOString().split('T')[0], // 四天前
+      date: formatDate(new Date(Date.now() - 345600000)), // 四天前
       storeName: '康是美藥妝店',
       items: [
         { name: '醫療用品', amount: 280, quantity: 1 },
@@ -121,7 +132,7 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
     {
       id: '6',
       invoiceNumber: 'KL67890123',
-      date: new Date(Date.now() - 432000000).toISOString().split('T')[0], // 五天前
+      date: formatDate(new Date(Date.now() - 432000000)), // 五天前
       storeName: '電信服務',
       items: [
         { name: '通話費', amount: 500, quantity: 1 },
@@ -132,7 +143,7 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
     {
       id: '7',
       invoiceNumber: 'MN78901234',
-      date: new Date(Date.now() - 518400000).toISOString().split('T')[0], // 六天前
+      date: formatDate(new Date(Date.now() - 518400000)), // 六天前
       storeName: '加油站',
       items: [
         { name: '加油服務', amount: 1200, quantity: 1 },
@@ -142,16 +153,33 @@ async function fetchInvoices(): Promise<InvoiceItem[]> {
   ]
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const startTime = Date.now()
+  const requestId = Math.random().toString(36).substring(7)
+  
   try {
+    console.log(`[${requestId}] GET /api/invoices - Request started`)
+    
+    // 記錄請求資訊
+    const url = new URL(request.url)
+    console.log(`[${requestId}] Request URL:`, url.toString())
+    console.log(`[${requestId}] Request headers:`, Object.fromEntries(request.headers.entries()))
+    
+    console.log(`[${requestId}] Fetching invoices...`)
     const invoices = await fetchInvoices()
+    console.log(`[${requestId}] Fetched ${invoices.length} invoices`)
     
     // 將發票數據轉換為碳排放記錄，保留完整發票信息
-    const carbonRecords = invoices.map(invoice => {
+    console.log(`[${requestId}] Processing carbon records...`)
+    const carbonRecords = invoices.map((invoice, index) => {
+      console.log(`[${requestId}] Processing invoice ${index + 1}/${invoices.length}: ${invoice.invoiceNumber}`)
+      
       // 計算發票中每個商品的碳排放
       const itemsWithCO2 = invoice.items.map(item => {
         const category = categorizeItem(item.name, item.category)
         const co2Amount = calculateCO2FromAmount(item.amount, category)
+        
+        console.log(`[${requestId}]   Item: ${item.name} -> Category: ${category}, CO2: ${co2Amount}kg`)
         
         return {
           name: item.name,
@@ -164,6 +192,7 @@ export async function GET() {
       
       // 計算發票總碳排放
       const totalCO2 = itemsWithCO2.reduce((sum, item) => sum + item.co2Amount, 0)
+      console.log(`[${requestId}]   Total CO2 for invoice ${invoice.invoiceNumber}: ${totalCO2}kg`)
       
       // 判斷主要類別（碳排放最多的類別）
       const categoryCounts = itemsWithCO2.reduce((acc, item) => {
@@ -171,6 +200,7 @@ export async function GET() {
         return acc
       }, {} as Record<string, number>)
       const mainCategory = Object.entries(categoryCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || 'other'
+      console.log(`[${requestId}]   Main category: ${mainCategory}`, categoryCounts)
       
       return {
         id: invoice.id,
@@ -184,13 +214,47 @@ export async function GET() {
       }
     })
     
-    return NextResponse.json({ records: carbonRecords })
+    const totalRecords = carbonRecords.length
+    const totalCO2 = carbonRecords.reduce((sum, record) => sum + record.totalCO2, 0)
+    const processingTime = Date.now() - startTime
+    
+    console.log(`[${requestId}] Processing complete:`)
+    console.log(`[${requestId}]   - Total records: ${totalRecords}`)
+    console.log(`[${requestId}]   - Total CO2: ${totalCO2.toFixed(2)}kg`)
+    console.log(`[${requestId}]   - Processing time: ${processingTime}ms`)
+    
+    const response = NextResponse.json({ records: carbonRecords })
+    
+    // 添加調試標頭
+    response.headers.set('X-Request-ID', requestId)
+    response.headers.set('X-Processing-Time', `${processingTime}ms`)
+    response.headers.set('X-Records-Count', `${totalRecords}`)
+    
+    return response
   } catch (error) {
-    console.error('Error fetching invoices:', error)
-    return NextResponse.json(
-      { error: '無法獲取統一發票數據' },
+    const processingTime = Date.now() - startTime
+    console.error(`[${requestId}] Error fetching invoices (${processingTime}ms):`, error)
+    
+    // 詳細錯誤資訊
+    if (error instanceof Error) {
+      console.error(`[${requestId}] Error name:`, error.name)
+      console.error(`[${requestId}] Error message:`, error.message)
+      console.error(`[${requestId}] Error stack:`, error.stack)
+    }
+    
+    const errorResponse = NextResponse.json(
+      { 
+        error: '無法獲取統一發票數據',
+        requestId,
+        timestamp: new Date().toISOString(),
+      },
       { status: 500 }
     )
+    
+    errorResponse.headers.set('X-Request-ID', requestId)
+    errorResponse.headers.set('X-Processing-Time', `${processingTime}ms`)
+    
+    return errorResponse
   }
 }
 
