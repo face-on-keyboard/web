@@ -1,13 +1,17 @@
 'use client'
 
 import { useLocation } from '@/components/fetchers/location'
-import { Layer, Map as MapLibre, Source } from '@vis.gl/react-maplibre'
+import { Layer, Map as MapLibre, Source, useMap } from '@vis.gl/react-maplibre'
 import type {
   CircleLayerSpecification,
   LineLayerSpecification,
 } from '@vis.gl/react-maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { FeatureCollection } from 'geojson'
+import maplibregl from 'maplibre-gl'
+import { useEffect } from 'react'
+import { renderToString } from 'react-dom/server'
+import { FeaturePopup } from '@/components/map-popup'
 
 export default function MapPage() {
   const { segments } = useLocation()
@@ -53,18 +57,6 @@ export default function MapPage() {
     },
   }
 
-  const greenRestaurantsLayer: CircleLayerSpecification = {
-    type: 'circle',
-    id: 'green-restaurants-points',
-    source: 'green-restaurants',
-    paint: {
-      'circle-radius': 6,
-      'circle-color': '#e7a43c', // --color-secondary-600
-      'circle-stroke-width': 2,
-      'circle-stroke-color': '#ffffff', // --color-white
-    },
-  }
-
   return (
     <>
       <MapLibre
@@ -82,14 +74,68 @@ export default function MapPage() {
           <Layer {...segmentsLineLayer} />
           <Layer {...segmentEndpointsLayer} />
         </Source>
-        <Source
-          id='green-restaurants'
-          type='geojson'
-          data='/layers/green-restaurants.geojson'
-        >
-          <Layer {...greenRestaurantsLayer} />
-        </Source>
+        <Overlays />
       </MapLibre>
+    </>
+  )
+}
+
+function Overlays() {
+  const { current: map } = useMap()
+
+  const greenRestaurantsLayer: CircleLayerSpecification = {
+    type: 'circle',
+    id: 'green-restaurants-points',
+    source: 'green-restaurants',
+    paint: {
+      'circle-radius': 6,
+      'circle-color': '#e7a43c', // --color-secondary-600
+      'circle-stroke-width': 2,
+      'circle-stroke-color': '#ffffff', // --color-white
+    },
+  }
+
+  useEffect(() => {
+    if (!map) return
+    map.on('click', 'green-restaurants-points', (e) => {
+      const coordinates = e.lngLat
+      const feature = e.features?.[0]
+
+      if (!feature) return
+
+      new maplibregl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(
+          renderToString(
+            <FeaturePopup
+              feature={feature}
+              title={feature.properties.餐廳名稱}
+              columns={[
+                {
+                  label: '餐廳電話',
+                  value: feature.properties.餐廳電話 || '無資料',
+                },
+                {
+                  label: '餐廳地址',
+                  value: feature.properties.餐廳地址 || '無資料',
+                },
+              ]}
+            />
+          )
+        )
+        .addTo(map.getMap())
+    })
+  }, [map])
+
+  return (
+    <>
+      <Source
+        id='green-restaurants'
+        type='geojson'
+        data='/layers/green-restaurants.geojson'
+      >
+        <Layer {...greenRestaurantsLayer} />
+      </Source>
     </>
   )
 }
