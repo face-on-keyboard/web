@@ -4,8 +4,7 @@ import { z } from 'zod/v4'
 import { useMessage } from '../hooks/use-message'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from './client'
-import { useLocalStorage } from 'usehooks-ts'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { locationSchema } from '@/lib/schemas'
 
 const useSegments = () =>
@@ -39,34 +38,35 @@ const useCreateSegment = () =>
 export function useLocation() {
   const { data: segments, isLoading, refetch } = useSegments()
   const { mutate: create, isPending } = useCreateSegment()
-  const [lastUpdatedAt, setLastUpdatedAt] = useLocalStorage<number>(
-    'face_on_keyboard_location_last_updated_at',
-    0
-  )
+  const hasInitialized = useRef(false)
 
-  const { data, send } = useMessage({
-    name: 'face_on_keyboard_location',
-    validator: z.object({
-      segments: z.array(locationSchema),
-    }),
-    onMessage: (data) => {
+  const handleMessage = useCallback(
+    (data: { segments: z.infer<typeof locationSchema>[] }) => {
       for (const segment of data.segments) {
         create(segment)
       }
 
       refetch()
-      setLastUpdatedAt(new Date().getTime())
     },
+    [create, refetch]
+  )
+
+  const { send } = useMessage({
+    name: 'face_on_keyboard_location',
+    validator: z.object({
+      segments: z.array(locationSchema),
+    }),
+    onMessage: handleMessage,
   })
 
   useEffect(() => {
-    // Update every 5 minutes
-    if (new Date().getTime() - lastUpdatedAt >= 1000 * 60 * 5) {
+    if (!hasInitialized.current) {
+      hasInitialized.current = true
       send({
         data: { clear_after_fetch: true },
       })
     }
-  }, [send, lastUpdatedAt])
+  }, [send])
 
   return { segments, isLoading, isCreating: isPending }
 }
