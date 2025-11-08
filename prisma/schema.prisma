@@ -66,3 +66,35 @@ model InvoiceDetail {
 
     @@index([invoiceId])
 }
+
+
+
+// 碳標籤證書資料表（用於 RAG mapping 商品名稱和碳足跡數據）
+model CarbonLabel {
+    id                    Int      @id @default(autoincrement())
+    
+    // 基本產品資訊
+    productType           String?  // 產品類型
+    productName           String   // 產品名稱 (RAG mapping 的關鍵欄位，必填)
+    productModel          String?  // 產品型號
+    
+    // 證書資訊
+    status                String?  // 狀態 (如: 'Active', 'Expired', '過期')
+    
+    // 公司資訊
+    companyName           String?  // 公司關體名稱
+    uniformNumber         String?  // 統一編號/農畜牧登字
+    
+    // 碳足跡數據（計算的關鍵欄位）
+    carbonFootprintValue  Decimal @db.Decimal(10, 4) // 碳足跡數值 (如: 11.00)
+    carbonFootprintUnit   String?  // 碳足跡單位 (如: 'kg')
+    declarationUnit       String?  // 宣告單位 (如: '一條(180 cm x 150 cm)')
+
+
+    // 時間戳記
+    createdAt               DateTime @default(now())
+    updatedAt               DateTime @updatedAt
+
+    @@index([productName]) // 用於 RAG mapping 商品名稱
+    @@index([status])
+}
