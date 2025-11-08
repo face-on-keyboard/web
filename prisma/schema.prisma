@@ -36,6 +36,7 @@ model Invoice {
     invoiceTime   String?  // 發票開立時間 (HH:mm:ss) (選填)
     buyerBan      String?  // 買方營業人統編 (選填)
     currency      String?  // 幣別 (選填)
+    userEmail     String?  // 使用者電子郵件 (選填)
     
     // 關聯
     details       InvoiceDetail[]
@@ -48,6 +49,7 @@ model Invoice {
     @@index([invDate])
     @@index([sellerBan])
     @@index([invPeriod])
+    @@index([userEmail])
 }
 
 model InvoiceDetail {

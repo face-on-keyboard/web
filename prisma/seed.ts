@@ -15,22 +15,19 @@ function generateTaiwanCompanyName() {
   return `${prefix}${faker.helpers.arrayElement(companyTypes)}`;
 }
 
-// 生成台灣地址
+// 生成台灣地址（使用真實的台北地址）
 function generateTaiwanAddress() {
-  const cities = ["台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市"];
-  const districts = [
-    "中正區",
-    "信義區",
-    "大安區",
-    "中山區",
-    "板橋區",
-    "中和區",
+  const realAddresses = [
+    "臺北市中正區寧波東街1-1號",
+    "臺北市內湖區舊宗路一段268號",
+    "臺北市中正區羅斯福路二段68號",
+    "臺北市松山區南京東路四段2號",
+    "臺北市大安區建國南路二段125號",
+    "臺北市中山區中山北路三段181號",
+    "臺北市文山區新光路二段30號",
+    "臺北市士林區承德路五段55號",
   ];
-  const city = faker.helpers.arrayElement(cities);
-  const district = faker.helpers.arrayElement(districts);
-  const road = faker.location.street();
-  const number = faker.number.int({ min: 1, max: 999 });
-  return `${city}${district}${road}${number}號`;
+  return faker.helpers.arrayElement(realAddresses);
 }
 
 // 生成發票號碼（格式：兩個英文字母 + 8 位數字）
@@ -132,6 +129,7 @@ async function main() {
         currency: faker.datatype.boolean(0.9)
           ? "TWD"
           : faker.helpers.arrayElement(["USD", "EUR", "JPY"]), // 幣別（90% 是台幣）
+        userEmail: faker.internet.email(), // 使用者電子郵件
       },
     });
 
