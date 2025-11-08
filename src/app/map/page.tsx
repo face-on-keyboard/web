@@ -2,28 +2,31 @@
 
 import { useLocation } from '@/components/fetchers/location'
 import { Layer, Map as MapLibre, Source } from '@vis.gl/react-maplibre'
-import type { LineLayerSpecification } from '@vis.gl/react-maplibre'
+import type {
+  LineLayerSpecification,
+  CircleLayerSpecification,
+} from '@vis.gl/react-maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { FeatureCollection } from 'geojson'
 
 export default function MapPage() {
-  const { data, error } = useLocation()
+  const { segments } = useLocation()
 
   const segmentsGeoJson: FeatureCollection = {
     type: 'FeatureCollection',
     features:
-      data?.segments.map((segment) => ({
+      segments?.map((segment) => ({
         type: 'Feature',
         geometry: {
           type: 'LineString',
           coordinates: [
-            [segment.start_x, segment.start_y],
-            [segment.end_x, segment.end_y],
+            [segment.startX, segment.startY],
+            [segment.endX, segment.endY],
           ],
         },
         properties: {
-          start: segment.start_time,
-          end: segment.end_time,
+          start: segment.fromTime,
+          end: segment.toTime,
         },
       })) ?? [],
   }
@@ -35,6 +38,18 @@ export default function MapPage() {
     paint: {
       'line-width': 5,
       'line-color': '#e7a43c', // --color-secondary-600
+    },
+  }
+
+  const pointLayerStyle: CircleLayerSpecification = {
+    type: 'circle',
+    id: 'history-points',
+    source: 'history-data',
+    paint: {
+      'circle-radius': 6,
+      'circle-color': '#e7a43c', // --color-secondary-600
+      'circle-stroke-width': 2,
+      'circle-stroke-color': '#ffffff', // --color-white
     },
   }
 
@@ -53,6 +68,7 @@ export default function MapPage() {
       >
         <Source id='history-data' type='geojson' data={segmentsGeoJson}>
           <Layer {...lineLayerStyle} />
+          <Layer {...pointLayerStyle} />
         </Source>
       </MapLibre>
     </>
