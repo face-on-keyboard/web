@@ -129,19 +129,21 @@ export default function RecordsPage() {
               <div className='flex gap-2'>
                 <button
                   onClick={() => setSortBy('date')}
-                  className={`rounded-lg px-3 py-1.5 font-semibold text-xs transition-colors ${sortBy === 'date'
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
-                    }`}
+                  className={`rounded-lg px-3 py-1.5 font-semibold text-xs transition-colors ${
+                    sortBy === 'date'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
+                  }`}
                 >
                   按日期
                 </button>
                 <button
                   onClick={() => setSortBy('category')}
-                  className={`rounded-lg px-3 py-1.5 font-semibold text-xs transition-colors ${sortBy === 'category'
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
-                    }`}
+                  className={`rounded-lg px-3 py-1.5 font-semibold text-xs transition-colors ${
+                    sortBy === 'category'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
+                  }`}
                 >
                   按類別
                 </button>
@@ -219,8 +221,9 @@ export default function RecordsPage() {
                             CO₂
                           </div>
                           <span
-                            className={`text-foreground-muted transition-transform ${isExpanded ? 'rotate-180' : ''
-                              }`}
+                            className={`text-foreground-muted transition-transform ${
+                              isExpanded ? 'rotate-180' : ''
+                            }`}
                           >
                             ▼
                           </span>
