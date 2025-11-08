@@ -19,17 +19,84 @@ model Post {
     @@index([name])
 }
 
-model CarbonRecord {
-    id          String   @id @default(cuid())
-    category    String   // 類別：交通、能源、食物等
-    description String   // 描述
-    amount      Float    // 數量
-    unit        String   // 單位：kg, km, kWh等
-    co2Amount   Float    // 二氧化碳排放量（kg CO2）
-    date        DateTime @default(now()) // 記錄日期
+model Invoice {
+    id            Int      @id @default(autoincrement())
+    // API 回應欄位
+    v             String?  // 版本號碼 (選填)
+    code          String?  // 訊息回應碼 (選填)
+    msg           String?  // 系統回應訊息 (選填)
+    invNum        String   // 發票號碼 (必填)
+    invDate       DateTime? // 發票開立日期 (選填)
+    sellerName    String?  // 賣方名稱 (選填)
+    amount        Decimal? @db.Decimal(10, 2) // 總金額 (選填)
+    invStatus     String?  // 發票狀態 (選填)
+    invPeriod     String?  // 發票期別 (YYYYMM) (選填)
+    sellerBan     String?  // 賣方營業人統編 (選填)
+    sellerAddress String?  // 賣方營業人地址 (選填)
+    invoiceTime   String?  // 發票開立時間 (HH:mm:ss) (選填)
+    buyerBan      String?  // 買方營業人統編 (選填)
+    currency      String?  // 幣別 (選填)
+    userEmail     String?  // 使用者電子郵件 (選填)
+    
+    // 關聯
+    details       InvoiceDetail[]
+    
+    // 時間戳記
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    @@index([invNum])
+    @@index([invDate])
+    @@index([sellerBan])
+    @@index([invPeriod])
+    @@index([userEmail])
+}
+
+model InvoiceDetail {
+    id          Int      @id @default(autoincrement())
+    invoiceId   Int      // 外鍵
+    invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+    rowNum      Int      // 明細編號
+    description String   // 品名
+    quantity    Decimal  @db.Decimal(10, 2) // 數量
+    unitPrice   Decimal  @db.Decimal(10, 2) // 單價
+    amount      Decimal  @db.Decimal(10, 2) // 小計
+    
+    // 時間戳記
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 
-    @@index([date])
-    @@index([category])
+    @@index([invoiceId])
+}
+
+
+
+// 碳標籤證書資料表（用於 RAG mapping 商品名稱和碳足跡數據）
+model CarbonLabel {
+    id                    Int      @id @default(autoincrement())
+    
+    // 基本產品資訊
+    productType           String?  // 產品類型
+    productName           String   // 產品名稱 (RAG mapping 的關鍵欄位，必填)
+    productModel          String?  // 產品型號
+    
+    // 證書資訊
+    status                String?  // 狀態 (如: 'Active', 'Expired', '過期')
+    
+    // 公司資訊
+    companyName           String?  // 公司關體名稱
+    uniformNumber         String?  // 統一編號/農畜牧登字
+    
+    // 碳足跡數據（計算的關鍵欄位）
+    carbonFootprintValue  Decimal @db.Decimal(10, 4) // 碳足跡數值 (如: 11.00)
+    carbonFootprintUnit   String?  // 碳足跡單位 (如: 'kg')
+    declarationUnit       String?  // 宣告單位 (如: '一條(180 cm x 150 cm)')
+
+
+    // 時間戳記
+    createdAt               DateTime @default(now())
+    updatedAt               DateTime @updatedAt
+
+    @@index([productName]) // 用於 RAG mapping 商品名稱
+    @@index([status])
 }
