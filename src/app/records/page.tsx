@@ -53,11 +53,14 @@ const CARBON_CATEGORIES = [
   },
 ]
 
+type SortOption = 'date' | 'category'
+
 export default function RecordsPage() {
   const [records, setRecords] = useState<CarbonRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
+  const [sortBy, setSortBy] = useState<SortOption>('date')
 
   const fetchInvoices = async () => {
     try {
@@ -83,12 +86,44 @@ export default function RecordsPage() {
     fetchInvoices()
   }, [])
 
-  // 按日期排序，最新的在前
+  // 輔助函數：獲取類別標籤
+  const getCategoryLabel = (categoryValue: string) => {
+    return CARBON_CATEGORIES.find(c => c.value === categoryValue)?.label || categoryValue
+  }
+
+  // 根據選擇的排序方式排序
   const sortedRecords = useMemo(() => {
-    return [...records].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
-    })
-  }, [records])
+    const recordsCopy = [...records]
+    
+    if (sortBy === 'date') {
+      // 按日期排序，最新的在前
+      return recordsCopy.sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      })
+    } else if (sortBy === 'category') {
+      // 按類別排序，相同類別按日期排序
+      return recordsCopy.sort((a, b) => {
+        // 獲取類別標籤進行排序
+        const categoryA = getCategoryLabel(a.category)
+        const categoryB = getCategoryLabel(b.category)
+        
+        // 先按類別標籤排序
+        const categoryCompare = categoryA.localeCompare(categoryB, 'zh-TW')
+        if (categoryCompare !== 0) {
+          return categoryCompare
+        }
+        // 相同類別時按日期排序，最新的在前
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      })
+    }
+    
+    return recordsCopy
+  }, [records, sortBy])
+
+  // 計算總碳排放量
+  const totalCO2 = useMemo(() => {
+    return sortedRecords.reduce((sum, record) => sum + record.totalCO2, 0)
+  }, [sortedRecords])
 
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecords(prev => {
@@ -132,10 +167,6 @@ export default function RecordsPage() {
     return <span className={emojiSizes[size]}>{category.icon}</span>
   }
 
-  const getCategoryLabel = (categoryValue: string) => {
-    return CARBON_CATEGORIES.find(c => c.value === categoryValue)?.label || categoryValue
-  }
-
   const getCategoryColor = (categoryValue: string) => {
     return CARBON_CATEGORIES.find(c => c.value === categoryValue)?.color || 'bg-grey-100 text-grey-700'
   }
@@ -161,12 +192,51 @@ export default function RecordsPage() {
           </div>
         )}
 
+        {/* 統計資訊 */}
+        {!loading && sortedRecords.length > 0 && (
+          <div className='mb-4 grid grid-cols-2 gap-3'>
+            <div className='rounded-lg bg-white p-4 shadow-sm'>
+              <div className='mb-1 text-xs text-foreground-muted'>總記錄數</div>
+              <div className='text-xl font-semibold text-primary-600'>{sortedRecords.length}</div>
+              <div className='text-xs text-foreground-muted'>筆記錄</div>
+            </div>
+            <div className='rounded-lg bg-white p-4 shadow-sm'>
+              <div className='mb-1 text-xs text-foreground-muted'>總碳排放量</div>
+              <div className='text-xl font-semibold text-primary-600'>{totalCO2.toFixed(2)}</div>
+              <div className='text-xs text-foreground-muted'>kg CO₂</div>
+            </div>
+          </div>
+        )}
 
         {/* 記錄列表 */}
         <div className='rounded-lg bg-white p-4 shadow-sm'>
           <div className='mb-3 flex items-center justify-between'>
             {loading && (
               <div className='text-xs text-foreground-muted'>載入中...</div>
+            )}
+            {!loading && sortedRecords.length > 0 && (
+              <div className='flex gap-2'>
+                <button
+                  onClick={() => setSortBy('date')}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    sortBy === 'date'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
+                  }`}
+                >
+                  按日期
+                </button>
+                <button
+                  onClick={() => setSortBy('category')}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    sortBy === 'category'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
+                  }`}
+                >
+                  按類別
+                </button>
+              </div>
             )}
           </div>
           {loading && records.length === 0 ? (
