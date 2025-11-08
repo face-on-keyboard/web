@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 
 interface InvoiceAccount {
@@ -96,6 +96,19 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
 
+  // 排行榜數據
+  const [leaderboardData, setLeaderboardData] = useState<Array<{
+    userId: string
+    userName: string
+    weeklyCO2: number
+    isCurrentUser: boolean
+  }>>([])
+  
+  // 滾動相關狀態
+  const [isScrolledToLowerUsers, setIsScrolledToLowerUsers] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const leaderboardDataRef = useRef(leaderboardData)
+
   // 載入使用者資料
   useEffect(() => {
     // 從 localStorage 讀取（前端暫存，實際應從 API 獲取）
@@ -108,9 +121,10 @@ export default function ProfilePage() {
       }
     } else {
       // 如果沒有資料，使用預設值（實際應從 API 獲取）
+      const today = new Date().toISOString().split('T')[0]
       setUserProfile({
         name: '使用者',
-        birthday: new Date().toISOString().split('T')[0],
+        birthday: today || new Date().toISOString().substring(0, 10),
       })
     }
     setIsLoadingProfile(false)
@@ -287,6 +301,326 @@ export default function ProfilePage() {
   // 只顯示最近三筆
   const recentRecords = sortedRecords.slice(0, 3)
   const hasMoreRecords = sortedRecords.length > 3
+
+  // 計算本週總碳排量
+  const calculateWeeklyCO2 = useMemo(() => {
+    const now = new Date()
+    const dayOfWeek = now.getDay() // 0 = 星期日, 1 = 星期一, ...
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - dayOfWeek) // 設定為本週第一天（星期日）
+    startOfWeek.setHours(0, 0, 0, 0)
+    
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6) // 本週最後一天
+    endOfWeek.setHours(23, 59, 59, 999)
+    
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+    
+    const startStr = formatDate(startOfWeek)
+    const endStr = formatDate(endOfWeek)
+    
+    return records
+      .filter(record => {
+        const recordDate = record.date
+        return recordDate >= startStr && recordDate <= endStr
+      })
+      .reduce((sum, record) => sum + record.totalCO2, 0)
+  }, [records])
+
+  // 載入排行榜數據
+  useEffect(() => {
+    // TODO: 從 API 獲取排行榜數據
+    // 目前使用模擬數據
+    const currentUserName = userProfile?.name || '使用者'
+    const mockLeaderboard: Array<{
+      userId: string
+      userName: string
+      weeklyCO2: number
+      isCurrentUser: boolean
+    }> = [
+      {
+        userId: 'user1',
+        userName: 'Eco Master',
+        weeklyCO2: 5.2,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user2',
+        userName: currentUserName,
+        weeklyCO2: calculateWeeklyCO2,
+        isCurrentUser: true,
+      },
+      {
+        userId: 'user3',
+        userName: 'Green Lifer',
+        weeklyCO2: 8.5,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user4',
+        userName: 'Carbon Pioneer',
+        weeklyCO2: 12.3,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user5',
+        userName: 'Eco Angel',
+        weeklyCO2: 15.8,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user6',
+        userName: 'Energy Expert',
+        weeklyCO2: 18.6,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user7',
+        userName: 'Low Carbon Lifer',
+        weeklyCO2: 700,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user8',
+        userName: 'Eco Beginner',
+        weeklyCO2: 800,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user9',
+        userName: 'Carbon Newbie',
+        weeklyCO2: 305,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user10',
+        userName: 'Just Started',
+        weeklyCO2: 352,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user11',
+        userName: 'Learning',
+        weeklyCO2: 408,
+        isCurrentUser: false,
+      },
+      {
+        userId: 'user12',
+        userName: 'New Member',
+        weeklyCO2: 456,
+        isCurrentUser: false,
+      },
+    ]
+    
+    // 按總碳排量排序（最低的在前）
+    const sorted = mockLeaderboard.sort((a, b) => a.weeklyCO2 - b.weeklyCO2)
+    setLeaderboardData(sorted)
+  }, [calculateWeeklyCO2, userProfile?.name])
+
+  // 排行榜用戶卡片元件
+  const LeaderboardUserCard = ({ 
+    user, 
+    rank, 
+    isCurrentUser = false 
+  }: { 
+    user: { userId: string; userName: string; weeklyCO2: number }
+    rank: number
+    isCurrentUser?: boolean
+  }) => {
+    const isFirst = rank === 1
+    
+    return (
+      <div className={`flex items-center gap-3 rounded-lg border p-3 ${
+        isCurrentUser 
+          ? 'border-primary-500 bg-primary-50 shadow-md' 
+          : 'border-grey-200 bg-white'
+      }`}>
+        {/* 排名 */}
+        <div className='flex w-8 items-center justify-center'>
+          <span className={`text-lg font-bold ${
+            isFirst && !isCurrentUser ? 'text-primary-600' : 'text-foreground-muted'
+          }`}>
+            {rank}
+          </span>
+        </div>
+        
+        {/* 用戶資訊 */}
+        <div className='flex-1 min-w-0'>
+          <div className='mb-1 flex items-center gap-2'>
+            <span className={`text-body font-semibold ${
+              isCurrentUser ? 'text-primary-700' : 'text-foreground-primary'
+            }`}>
+              {user.userName}
+              {isCurrentUser && (
+                <span className='ml-2 text-xs text-primary-600'>(我)</span>
+              )}
+            </span>
+          </div>
+          <div className='text-xs text-foreground-muted'>
+            本週碳排：{user.weeklyCO2.toFixed(2)} kg CO₂
+          </div>
+        </div>
+        
+        {/* 冠軍圖標 */}
+        {isFirst && (
+          <div className='flex-shrink-0'>
+            <img
+              src='/icons/champ.svg'
+              alt='冠軍'
+              className='h-6 w-6'
+            />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // 處理排行榜顯示邏輯：所有用戶都在一個滾動區域中
+  const processedLeaderboard = useMemo(() => {
+    if (leaderboardData.length === 0) return { currentUser: null, allOtherUsers: [] }
+    
+    const currentUser = leaderboardData.find(u => u.isCurrentUser)
+    if (!currentUser) return { currentUser: null, allOtherUsers: [] }
+    
+    // 找到當前用戶的實際排名
+    const currentUserActualRank = leaderboardData.findIndex(u => u.isCurrentUser) + 1
+    
+    // 獲取所有其他用戶（排除使用者）
+    const allOtherUsers = leaderboardData.filter(u => !u.isCurrentUser)
+    
+    return {
+      currentUser: { ...currentUser, actualRank: currentUserActualRank },
+      allOtherUsers,
+    }
+  }, [leaderboardData])
+  
+  // 使用 ref 存儲 processedLeaderboard 以確保滾動監聽器總是使用最新值
+  const processedLeaderboardRef = useRef(processedLeaderboard)
+  useEffect(() => {
+    processedLeaderboardRef.current = processedLeaderboard
+  }, [processedLeaderboard])
+  
+  // 判斷使用者是否應該固定在上方
+  const shouldFixUserAtTop = useMemo(() => {
+    if (!processedLeaderboard.currentUser) return false
+    const currentUserActualRank = processedLeaderboard.currentUser.actualRank
+    // 如果使用者排名 <= 3，固定在上方；否則根據滾動狀態決定
+    return currentUserActualRank <= 3 || isScrolledToLowerUsers
+  }, [processedLeaderboard.currentUser, isScrolledToLowerUsers])
+  
+  // 監聽滾動事件，判斷是否滾動到比使用者排名還低的人
+  useEffect(() => {
+    // 如果沒有顯示排行榜，不設置監聽器
+    if (!showLeaderboard) {
+      setIsScrolledToLowerUsers(false)
+      return
+    }
+    
+    const scrollContainer = scrollContainerRef.current
+    if (!scrollContainer) {
+      setIsScrolledToLowerUsers(false)
+      return
+    }
+    
+    const handleScroll = () => {
+      const container = scrollContainerRef.current
+      if (!container) return
+      
+      // 使用最新的 ref 值
+      const latestProcessedLeaderboard = processedLeaderboardRef.current
+      const latestLeaderboardData = leaderboardDataRef.current
+      
+      if (!latestProcessedLeaderboard?.currentUser) {
+        setIsScrolledToLowerUsers(false)
+        return
+      }
+      
+      const currentUserActualRank = latestProcessedLeaderboard.currentUser.actualRank
+      
+      // 如果使用者排名 <= 3，不需要動態凍結
+      if (currentUserActualRank <= 3) {
+        setIsScrolledToLowerUsers(false)
+        return
+      }
+      
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      
+      // 如果內容不足以滾動，不需要動態凍結
+      if (scrollHeight <= clientHeight) {
+        setIsScrolledToLowerUsers(false)
+        return
+      }
+      
+      // 獲取滾動容器中的所有子元素（用戶卡片）
+      const children = Array.from(container.children) as HTMLElement[]
+      if (children.length === 0) {
+        setIsScrolledToLowerUsers(false)
+        return
+      }
+      
+      // 找到第一個可見的用戶卡片
+      let firstVisibleUser: { userId: string; userName: string; weeklyCO2: number } | null = null
+      const containerRect = container.getBoundingClientRect()
+      
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i]
+        if (!child) continue
+        
+        const rect = child.getBoundingClientRect()
+        // 如果卡片在容器可見區域內
+        if (rect.top >= containerRect.top && rect.top < containerRect.bottom) {
+          // 找到對應的用戶
+          const userIndex = i
+          const user = latestProcessedLeaderboard.allOtherUsers[userIndex]
+          if (user) {
+            firstVisibleUser = user
+            break
+          }
+        }
+      }
+      
+      // 如果沒有找到可見的用戶，固定在下方
+      if (!firstVisibleUser) {
+        setIsScrolledToLowerUsers(false)
+        return
+      }
+      
+      // 計算第一個可見用戶的排名
+      const firstVisibleRank = latestLeaderboardData.findIndex(u => u.userId === firstVisibleUser!.userId) + 1
+      
+      // 如果第一個可見用戶的排名 >= 使用者的排名，表示已滾動到排名低於使用者的用戶
+      const hasScrolledToLowerUsers = firstVisibleRank >= currentUserActualRank
+      
+      setIsScrolledToLowerUsers(hasScrolledToLowerUsers)
+    }
+    
+    // 設置監聽器
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+    
+    // 使用 ResizeObserver 監聽容器大小變化
+    const resizeObserver = new ResizeObserver(() => {
+      handleScroll()
+    })
+    resizeObserver.observe(scrollContainer)
+    
+    // 延遲初始檢查，確保 DOM 已完全渲染
+    const timeoutId = setTimeout(() => {
+      handleScroll()
+    }, 200)
+    
+    return () => {
+      clearTimeout(timeoutId)
+      scrollContainer.removeEventListener('scroll', handleScroll)
+      resizeObserver.disconnect()
+    }
+  }, [processedLeaderboard.currentUser?.actualRank, showLeaderboard])
 
   // 輔助函數
   const getCategoryIconElement = (categoryValue: string, size: 'sm' | 'md' | 'lg' = 'md') => {
@@ -524,12 +858,42 @@ export default function ProfilePage() {
 
           {showLeaderboard ? (
             <div className='space-y-3'>
-              {/* 排行榜內容 */}
-              <div className='rounded-lg border border-grey-200 bg-grey-50 p-3'>
-                <div className='text-center text-body text-foreground-muted'>
-                  排行榜功能開發中
+              <>
+                {/* 如果使用者應該固定在上方，先顯示使用者 */}
+                {shouldFixUserAtTop && processedLeaderboard.currentUser && (
+                  <LeaderboardUserCard
+                    user={processedLeaderboard.currentUser}
+                    rank={processedLeaderboard.currentUser.actualRank}
+                    isCurrentUser={true}
+                  />
+                )}
+                
+                {/* 可滾動區域：包含所有其他用戶 */}
+                <div 
+                  ref={scrollContainerRef}
+                  className='max-h-32 space-y-2 overflow-y-auto'
+                >
+                  {processedLeaderboard.allOtherUsers.map((user) => {
+                    const rank = leaderboardData.findIndex(u => u.userId === user.userId) + 1
+                    return (
+                      <LeaderboardUserCard
+                        key={user.userId}
+                        user={user}
+                        rank={rank}
+                      />
+                    )
+                  })}
                 </div>
-              </div>
+                
+                {/* 如果使用者應該固定在下方，在使用者後面顯示 */}
+                {!shouldFixUserAtTop && processedLeaderboard.currentUser && (
+                  <LeaderboardUserCard
+                    user={processedLeaderboard.currentUser}
+                    rank={processedLeaderboard.currentUser.actualRank}
+                    isCurrentUser={true}
+                  />
+                )}
+              </>
             </div>
           ) : (
             <>
@@ -559,8 +923,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* 成就列表 */}
-                  <div className='max-h-96 space-y-3 overflow-y-auto'>
+                  {/* 成就列表 - 捲軸顯示，一次顯示最少四個成就 */}
+                  <div className='max-h-[272px] space-y-2 overflow-y-auto'>
                     {achievements.map((achievement) => (
                       <div
                         key={achievement.id}
