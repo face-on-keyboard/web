@@ -89,7 +89,7 @@ export function useMessage<T>({
       if (typeof sendOnLoad === 'boolean') send()
       else send(sendOnLoad)
     }
-  }, [])
+  }, [sendOnLoad])
 
   const send = useCallback(
     <T>(payload?: { data?: T }) => {
