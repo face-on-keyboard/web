@@ -2,7 +2,46 @@ import { useMemo } from 'react'
 import { buildDailyTotals, calculateDailyDelta, useInvoices } from './invoices'
 import { deriveCategoryStats } from '../dashboard/constants'
 
-export function useRecords() {
+export const CARBON_CATEGORIES = [
+  {
+    value: 'food',
+    label: '食物',
+    icon: '/icons/eat.svg',
+    iconType: 'image',
+    color: 'bg-green-100 text-green-700',
+  },
+  {
+    value: 'shopping',
+    label: '購物',
+    icon: '/icons/shopping.svg',
+    iconType: 'image',
+    color: 'bg-purple-100 text-purple-700',
+  },
+  {
+    value: 'transport',
+    label: '交通',
+    icon: '/icons/transport.svg',
+    iconType: 'image',
+    color: 'bg-blue-100 text-blue-700',
+  },
+  {
+    value: 'other',
+    label: '其他',
+    icon: '/icons/other.svg',
+    iconType: 'image',
+    color: 'bg-grey-100 text-grey-700',
+  },
+]
+
+const getCategoryLabel = (categoryValue: string) => {
+  const category = CARBON_CATEGORIES.find((c) => c.value === categoryValue)
+  return category?.label || '其他'
+}
+
+export function useRecords(options?: {
+  sortBy?: 'date' | 'category'
+  sortOrder?: 'asc' | 'desc'
+}) {
   const { data: records, isLoading: loading, error } = useInvoices()
 
   const dailyTotals = useMemo(() => {
@@ -26,14 +65,30 @@ export function useRecords() {
   }, [records, dailyTotals])
 
   const sortedRecords = useMemo(() => {
-    if (!records) {
-      return []
-    }
+    if (!records) return []
 
-    return [...records].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
+    const sorted = [...records]
+    sorted.sort((a, b) => {
+      let comparison = 0
+      if (!options?.sortBy || options.sortBy === 'date') {
+        // 按日期排序
+        comparison = new Date(a.date).getTime() - new Date(b.date).getTime()
+      } else if (options.sortBy === 'category') {
+        // 按類型（類別）排序
+        const categoryA = getCategoryLabel(a.category)
+        const categoryB = getCategoryLabel(b.category)
+        comparison = categoryA.localeCompare(categoryB, 'zh-TW')
+        // 如果類型相同，再按日期排序
+        if (comparison === 0) {
+          comparison = new Date(a.date).getTime() - new Date(b.date).getTime()
+        }
+      }
+      return !options?.sortOrder || options.sortOrder === 'asc'
+        ? comparison
+        : -comparison
     })
-  }, [records])
+    return sorted
+  }, [records, options])
 
   const recentRecords = sortedRecords.slice(0, 3)
   const hasMoreRecords = sortedRecords.length > 3

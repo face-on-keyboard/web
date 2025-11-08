@@ -1,64 +1,21 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import Link from 'next/link'
-import { useInvoices } from '@/components/fetchers/invoices'
+import { useRecords } from '@/components/fetchers/records'
 import {
-  getCategoryLabel,
   getCategoryColor,
   getCategoryIconElement,
+  getCategoryLabel,
 } from '@/lib/carbon-records'
+import Link from 'next/link'
+import { useState } from 'react'
 
 type SortOption = 'date' | 'category'
 
 export default function RecordsPage() {
-  const {
-    data: records = [],
-    isLoading: loading,
-    error: queryError,
-  } = useInvoices()
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
   const [sortBy, setSortBy] = useState<SortOption>('date')
-
-  const error = queryError
-    ? queryError instanceof Error
-      ? queryError.message
-      : '發生未知錯誤'
-    : null
-
-  // 根據選擇的排序方式排序
-  const sortedRecords = useMemo(() => {
-    const recordsCopy = [...records]
-
-    if (sortBy === 'date') {
-      // 按日期排序，最新的在前
-      return recordsCopy.sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-      })
-    } else if (sortBy === 'category') {
-      // 按類別排序，相同類別按日期排序
-      return recordsCopy.sort((a, b) => {
-        // 獲取類別標籤進行排序
-        const categoryA = getCategoryLabel(a.category)
-        const categoryB = getCategoryLabel(b.category)
-
-        // 先按類別標籤排序
-        const categoryCompare = categoryA.localeCompare(categoryB, 'zh-TW')
-        if (categoryCompare !== 0) {
-          return categoryCompare
-        }
-        // 相同類別時按日期排序，最新的在前
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-      })
-    }
-
-    return recordsCopy
-  }, [records, sortBy])
-
-  // 計算總碳排放量
-  const totalCO2 = useMemo(() => {
-    return sortedRecords.reduce((sum, record) => sum + record.totalCO2, 0)
-  }, [sortedRecords])
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const { records, loading, error, sortedRecords, totalCO2 } = useRecords()
 
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecords((prev) => {
@@ -93,7 +50,7 @@ export default function RecordsPage() {
         {/* 錯誤訊息 */}
         {error && (
           <div className='mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-red-600 text-sm'>
-            ⚠️ {error}
+            ⚠️ {JSON.stringify(error)}
           </div>
         )}
 
@@ -112,7 +69,7 @@ export default function RecordsPage() {
                 總碳排放量
               </div>
               <div className='font-semibold text-primary-600 text-xl'>
-                {totalCO2.toFixed(2)}
+                {totalCO2?.toFixed(2)}
               </div>
               <div className='text-foreground-muted text-xs'>kg CO₂</div>
             </div>
@@ -128,6 +85,7 @@ export default function RecordsPage() {
             {!loading && sortedRecords.length > 0 && (
               <div className='flex gap-2'>
                 <button
+                  type='button'
                   onClick={() => setSortBy('date')}
                   className={`rounded-lg px-3 py-1.5 font-semibold text-xs transition-colors ${
                     sortBy === 'date'
@@ -138,6 +96,7 @@ export default function RecordsPage() {
                   按日期
                 </button>
                 <button
+                  type='button'
                   onClick={() => setSortBy('category')}
                   className={`rounded-lg px-3 py-1.5 font-semibold text-xs transition-colors ${
                     sortBy === 'category'
@@ -150,7 +109,7 @@ export default function RecordsPage() {
               </div>
             )}
           </div>
-          {loading && records.length === 0 ? (
+          {loading && records?.length === 0 ? (
             <div className='py-8 text-center'>
               <div className='mb-3 animate-pulse text-3xl'>📄</div>
               <p className='text-foreground-muted text-sm'>
@@ -172,6 +131,7 @@ export default function RecordsPage() {
                     className='rounded-lg border border-grey-200 bg-white transition-colors hover:bg-grey-50'
                   >
                     {/* 主要記錄資訊 */}
+                    {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
                     <div
                       className='flex cursor-pointer flex-col gap-3 p-3'
                       onClick={() => toggleRecordExpansion(record.id)}
@@ -182,7 +142,7 @@ export default function RecordsPage() {
                         </div>
                         <div className='min-w-0 flex-1'>
                           <div className='mb-1.5 flex flex-wrap items-center gap-1.5'>
-                            <span className='break-words font-semibold text-foreground-primary text-sm'>
+                            <span className='wrap-break-word font-semibold text-foreground-primary text-sm'>
                               {record.storeName}
                             </span>
                             <span
@@ -240,7 +200,7 @@ export default function RecordsPage() {
                         <div className='space-y-2'>
                           {record.items.map((item, index) => (
                             <div
-                              key={index}
+                              key={`${item.name}-${index}`}
                               className='flex items-center justify-between rounded-lg bg-white p-2.5 shadow-sm'
                             >
                               <div className='min-w-0 flex-1'>
