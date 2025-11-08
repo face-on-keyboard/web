@@ -15,6 +15,7 @@ import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparison
 import { RecentRecords } from '../components/dashboard/RecentRecords'
 import { deriveCategoryStats } from '../components/dashboard/constants'
 import { useRecords } from '@/components/fetchers/records'
+import { useHealth } from '@/components/fetchers/health'
 
 export default function HomePage() {
   const {
@@ -30,6 +31,10 @@ export default function HomePage() {
     categoryStats,
     monthlyStats,
   } = useRecords()
+
+  const { health } = useHealth()
+
+  console.log('[HomePage] health', health)
 
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
   const [testEmission, setTestEmission] = useState<number | null>(null)

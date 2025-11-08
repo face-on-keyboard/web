@@ -8,3 +8,12 @@ export const locationSchema = z.object({
   end_y: z.number(),
   end_time: z.string(),
 })
+
+export const faceOnKeyboardHealthSchema = z.object({
+  steps: z.number(),
+  distance_meters: z.number(),
+  start_time: z.string(),
+  end_time: z.string(),
+})
+
+export type FaceOnKeyboardHealth = z.infer<typeof faceOnKeyboardHealthSchema>

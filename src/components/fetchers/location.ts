@@ -42,6 +42,11 @@ export function useLocation() {
 
   const handleMessage = useCallback(
     (data: { segments: z.infer<typeof locationSchema>[] }) => {
+      console.log(
+        '[useLocation] received face_on_keyboard_location',
+        data?.segments?.length ?? 0,
+        data
+      )
       for (const segment of data.segments) {
         create(segment)
       }
@@ -62,6 +67,9 @@ export function useLocation() {
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true
+      console.log('[useLocation] requesting face_on_keyboard_location', {
+        clear_after_fetch: true,
+      })
       send({
         data: { clear_after_fetch: true },
       })
