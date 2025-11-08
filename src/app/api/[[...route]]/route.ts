@@ -4,7 +4,7 @@ import { success } from './jsend'
 
 const app = new Hono().basePath('/api')
 
-app.get('/status', (c) => {
+const routes = app.get('/status', (c) => {
   return success(c, {
     timestamp: new Date().getTime(),
   })
@@ -12,3 +12,5 @@ app.get('/status', (c) => {
 
 export const GET = handle(app)
 export const POST = handle(app)
+
+export type AppType = typeof routes
