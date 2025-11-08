@@ -105,7 +105,6 @@ export default function ProfilePage() {
   }>>([])
   
   // 滾動相關狀態
-  const [isScrolledToLowerUsers, setIsScrolledToLowerUsers] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const leaderboardDataRef = useRef(leaderboardData)
 
@@ -352,7 +351,8 @@ export default function ProfilePage() {
       {
         userId: 'user2',
         userName: currentUserName,
-        weeklyCO2: calculateWeeklyCO2,
+        // 如果計算出的碳排量為0，使用一個測試值；否則使用實際計算值
+        weeklyCO2: calculateWeeklyCO2 > 0 ? calculateWeeklyCO2 : 150.5,
         isCurrentUser: true,
       },
       {
@@ -469,11 +469,46 @@ export default function ProfilePage() {
         {/* 冠軍圖標 */}
         {isFirst && (
           <div className='flex-shrink-0'>
-            <img
-              src='/icons/champ.svg'
-              alt='冠軍'
-              className='h-6 w-6'
-            />
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='24'
+              height='24'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              className='h-6 w-6 text-primary-600'
+            >
+              <path d='M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978'/>
+              <path d='M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978'/>
+              <path d='M18 9h1.5a1 1 0 0 0 0-5H18'/>
+              <path d='M4 22h16'/>
+              <path d='M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z'/>
+              <path d='M6 9H4.5a1 1 0 0 1 0-5H6'/>
+            </svg>
+          </div>
+        )}
+        
+        {/* 低於平均值的葉子圖標 */}
+        {user.weeklyCO2 < 226 && (
+          <div className='flex-shrink-0'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='24'
+              height='24'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              className='h-6 w-6 text-green-600'
+            >
+              <path d='M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z'/>
+              <path d='M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12'/>
+            </svg>
           </div>
         )}
       </div>
@@ -482,145 +517,27 @@ export default function ProfilePage() {
 
   // 處理排行榜顯示邏輯：所有用戶都在一個滾動區域中
   const processedLeaderboard = useMemo(() => {
-    if (leaderboardData.length === 0) return { currentUser: null, allOtherUsers: [] }
+    if (leaderboardData.length === 0) return { currentUser: null, allUsers: [] }
     
     const currentUser = leaderboardData.find(u => u.isCurrentUser)
-    if (!currentUser) return { currentUser: null, allOtherUsers: [] }
+    if (!currentUser) {
+      // 如果沒有使用者，返回所有用戶
+      return { currentUser: null, allUsers: leaderboardData }
+    }
     
     // 找到當前用戶的實際排名
     const currentUserActualRank = leaderboardData.findIndex(u => u.isCurrentUser) + 1
     
-    // 獲取所有其他用戶（排除使用者）
-    const allOtherUsers = leaderboardData.filter(u => !u.isCurrentUser)
+    // 獲取所有用戶（包含使用者）
+    const allUsers = leaderboardData
     
     return {
       currentUser: { ...currentUser, actualRank: currentUserActualRank },
-      allOtherUsers,
+      allUsers,
     }
   }, [leaderboardData])
   
-  // 使用 ref 存儲 processedLeaderboard 以確保滾動監聽器總是使用最新值
-  const processedLeaderboardRef = useRef(processedLeaderboard)
-  useEffect(() => {
-    processedLeaderboardRef.current = processedLeaderboard
-  }, [processedLeaderboard])
   
-  // 判斷使用者是否應該固定在上方
-  const shouldFixUserAtTop = useMemo(() => {
-    if (!processedLeaderboard.currentUser) return false
-    const currentUserActualRank = processedLeaderboard.currentUser.actualRank
-    // 如果使用者排名 <= 3，固定在上方；否則根據滾動狀態決定
-    return currentUserActualRank <= 3 || isScrolledToLowerUsers
-  }, [processedLeaderboard.currentUser, isScrolledToLowerUsers])
-  
-  // 監聽滾動事件，判斷是否滾動到比使用者排名還低的人
-  useEffect(() => {
-    // 如果沒有顯示排行榜，不設置監聽器
-    if (!showLeaderboard) {
-      setIsScrolledToLowerUsers(false)
-      return
-    }
-    
-    const scrollContainer = scrollContainerRef.current
-    if (!scrollContainer) {
-      setIsScrolledToLowerUsers(false)
-      return
-    }
-    
-    const handleScroll = () => {
-      const container = scrollContainerRef.current
-      if (!container) return
-      
-      // 使用最新的 ref 值
-      const latestProcessedLeaderboard = processedLeaderboardRef.current
-      const latestLeaderboardData = leaderboardDataRef.current
-      
-      if (!latestProcessedLeaderboard?.currentUser) {
-        setIsScrolledToLowerUsers(false)
-        return
-      }
-      
-      const currentUserActualRank = latestProcessedLeaderboard.currentUser.actualRank
-      
-      // 如果使用者排名 <= 3，不需要動態凍結
-      if (currentUserActualRank <= 3) {
-        setIsScrolledToLowerUsers(false)
-        return
-      }
-      
-      const scrollTop = container.scrollTop
-      const scrollHeight = container.scrollHeight
-      const clientHeight = container.clientHeight
-      
-      // 如果內容不足以滾動，不需要動態凍結
-      if (scrollHeight <= clientHeight) {
-        setIsScrolledToLowerUsers(false)
-        return
-      }
-      
-      // 獲取滾動容器中的所有子元素（用戶卡片）
-      const children = Array.from(container.children) as HTMLElement[]
-      if (children.length === 0) {
-        setIsScrolledToLowerUsers(false)
-        return
-      }
-      
-      // 找到第一個可見的用戶卡片
-      let firstVisibleUser: { userId: string; userName: string; weeklyCO2: number } | null = null
-      const containerRect = container.getBoundingClientRect()
-      
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i]
-        if (!child) continue
-        
-        const rect = child.getBoundingClientRect()
-        // 如果卡片在容器可見區域內
-        if (rect.top >= containerRect.top && rect.top < containerRect.bottom) {
-          // 找到對應的用戶
-          const userIndex = i
-          const user = latestProcessedLeaderboard.allOtherUsers[userIndex]
-          if (user) {
-            firstVisibleUser = user
-            break
-          }
-        }
-      }
-      
-      // 如果沒有找到可見的用戶，固定在下方
-      if (!firstVisibleUser) {
-        setIsScrolledToLowerUsers(false)
-        return
-      }
-      
-      // 計算第一個可見用戶的排名
-      const firstVisibleRank = latestLeaderboardData.findIndex(u => u.userId === firstVisibleUser!.userId) + 1
-      
-      // 如果第一個可見用戶的排名 >= 使用者的排名，表示已滾動到排名低於使用者的用戶
-      const hasScrolledToLowerUsers = firstVisibleRank >= currentUserActualRank
-      
-      setIsScrolledToLowerUsers(hasScrolledToLowerUsers)
-    }
-    
-    // 設置監聽器
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
-    
-    // 使用 ResizeObserver 監聽容器大小變化
-    const resizeObserver = new ResizeObserver(() => {
-      handleScroll()
-    })
-    resizeObserver.observe(scrollContainer)
-    
-    // 延遲初始檢查，確保 DOM 已完全渲染
-    const timeoutId = setTimeout(() => {
-      handleScroll()
-    }, 200)
-    
-    return () => {
-      clearTimeout(timeoutId)
-      scrollContainer.removeEventListener('scroll', handleScroll)
-      resizeObserver.disconnect()
-    }
-  }, [processedLeaderboard.currentUser?.actualRank, showLeaderboard])
 
   // 輔助函數
   const getCategoryIconElement = (categoryValue: string, size: 'sm' | 'md' | 'lg' = 'md') => {
@@ -859,8 +776,8 @@ export default function ProfilePage() {
           {showLeaderboard ? (
             <div className='space-y-3'>
               <>
-                {/* 如果使用者應該固定在上方，先顯示使用者 */}
-                {shouldFixUserAtTop && processedLeaderboard.currentUser && (
+                {/* 最上方固定顯示使用者 */}
+                {processedLeaderboard.currentUser && (
                   <LeaderboardUserCard
                     user={processedLeaderboard.currentUser}
                     rank={processedLeaderboard.currentUser.actualRank}
@@ -868,31 +785,23 @@ export default function ProfilePage() {
                   />
                 )}
                 
-                {/* 可滾動區域：包含所有其他用戶 */}
+                {/* 可滾動區域：包含所有用戶（包含使用者） */}
                 <div 
                   ref={scrollContainerRef}
-                  className='max-h-32 space-y-2 overflow-y-auto'
+                  className='max-h-[272px] space-y-2 overflow-y-auto'
                 >
-                  {processedLeaderboard.allOtherUsers.map((user) => {
+                  {processedLeaderboard.allUsers.map((user) => {
                     const rank = leaderboardData.findIndex(u => u.userId === user.userId) + 1
                     return (
                       <LeaderboardUserCard
                         key={user.userId}
                         user={user}
                         rank={rank}
+                        isCurrentUser={user.isCurrentUser}
                       />
                     )
                   })}
                 </div>
-                
-                {/* 如果使用者應該固定在下方，在使用者後面顯示 */}
-                {!shouldFixUserAtTop && processedLeaderboard.currentUser && (
-                  <LeaderboardUserCard
-                    user={processedLeaderboard.currentUser}
-                    rank={processedLeaderboard.currentUser.actualRank}
-                    isCurrentUser={true}
-                  />
-                )}
               </>
             </div>
           ) : (
@@ -973,7 +882,7 @@ export default function ProfilePage() {
               )}
               {!loading && hasMoreRecords && (
                 <Link
-                  href='/routes'
+                  href='/records'
                   className='rounded-lg bg-primary-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-700'
                 >
                   查看全部 ({sortedRecords.length})
