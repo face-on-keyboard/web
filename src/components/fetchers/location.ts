@@ -9,10 +9,10 @@ export const useLocation = () =>
         z.object({
           start_x: z.number(),
           start_y: z.number(),
-          start_time: z.date(),
+          start_time: z.string().transform((s) => new Date(s)),
           end_x: z.number(),
           end_y: z.number(),
-          end_time: z.date(),
+          end_time: z.string().transform((s) => new Date(s)),
         })
       ),
     }),
