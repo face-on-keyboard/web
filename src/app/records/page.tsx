@@ -70,34 +70,12 @@ export default function RecordsPage() {
         }
         const data = await response.json()
         
-        if (data.status === 'success' && data.data) {
-          const invoices = data.data
-          const carbonRecords: CarbonRecord[] = invoices.map((invoice: any) => {
-            const totalCO2 = invoice.items.reduce((sum: number, item: any) => {
-              return sum + (item.co2Amount || 0)
-            }, 0)
-            
-            // 根據第一個商品的類別決定主要類別
-            const mainCategory = invoice.items[0]?.category || 'other'
-            
-            return {
-              id: invoice.id,
-              invoiceNumber: invoice.invoiceNumber,
-              date: invoice.date,
-              storeName: invoice.storeName,
-              totalAmount: invoice.totalAmount,
-              category: mainCategory,
-              totalCO2,
-              items: invoice.items.map((item: any) => ({
-                name: item.name,
-                amount: item.amount,
-                quantity: item.quantity,
-                category: item.category,
-                co2Amount: item.co2Amount || 0,
-              })),
-            }
-          })
-          setRecords(carbonRecords)
+        // API 返回格式：{ records: [...] }
+        if (data.records && Array.isArray(data.records)) {
+          // 數據已經由 API 處理好，直接使用
+          setRecords(data.records)
+        } else {
+          setError('數據格式錯誤')
         }
       } catch (err) {
         console.error('Error fetching invoices:', err)
@@ -205,10 +183,10 @@ export default function RecordsPage() {
       <div className='mx-auto max-w-sm'>
         {/* 標題和返回按鈕 */}
         <div className='mb-4 flex items-center justify-between'>
-          <h1 className='text-2xl font-bold text-foreground-primary'>全部記錄</h1>
+          <h1 className='text-xl font-bold text-foreground-primary'>全部記錄</h1>
           <Link
             href='/profile'
-            className='rounded-lg bg-grey-100 px-4 py-2 text-sm font-semibold text-foreground-primary transition-colors hover:bg-grey-200'
+            className='rounded-lg bg-grey-100 px-3 py-1.5 text-xs font-semibold text-foreground-primary transition-colors hover:bg-grey-200'
           >
             返回
           </Link>
@@ -217,14 +195,14 @@ export default function RecordsPage() {
         {/* 統計資訊 */}
         <div className='mb-4 grid grid-cols-2 gap-3'>
           <div className='rounded-lg border border-grey-200 bg-white p-3'>
-            <div className='text-xs text-foreground-muted'>總碳排量</div>
-            <div className='mt-1 text-lg font-semibold text-foreground-primary'>
+            <div className='text-[10px] text-foreground-muted'>總碳排量</div>
+            <div className='mt-1 text-base font-semibold text-foreground-primary'>
               {totalCO2.toFixed(2)} kg CO₂
             </div>
           </div>
           <div className='rounded-lg border border-grey-200 bg-white p-3'>
-            <div className='text-xs text-foreground-muted'>總金額</div>
-            <div className='mt-1 text-lg font-semibold text-foreground-primary'>
+            <div className='text-[10px] text-foreground-muted'>總金額</div>
+            <div className='mt-1 text-base font-semibold text-foreground-primary'>
               NT$ {totalAmount.toLocaleString()}
             </div>
           </div>
@@ -232,10 +210,10 @@ export default function RecordsPage() {
 
         {/* 排序選項 */}
         <div className='mb-4 flex items-center gap-2'>
-          <span className='text-sm text-foreground-muted'>排序方式：</span>
+          <span className='text-xs text-foreground-muted'>排序方式：</span>
           <button
             onClick={() => setSortBy('date')}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
               sortBy === 'date'
                 ? 'bg-primary-500 text-white'
                 : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
@@ -245,7 +223,7 @@ export default function RecordsPage() {
           </button>
           <button
             onClick={() => setSortBy('category')}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
               sortBy === 'category'
                 ? 'bg-primary-500 text-white'
                 : 'bg-grey-100 text-foreground-primary hover:bg-grey-200'
@@ -255,7 +233,7 @@ export default function RecordsPage() {
           </button>
           <button
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className='rounded-lg border border-grey-200 bg-white px-3 py-2 text-sm transition-colors hover:bg-grey-50'
+            className='rounded-lg border border-grey-200 bg-white px-2.5 py-1.5 text-xs transition-colors hover:bg-grey-50'
             aria-label={sortOrder === 'asc' ? '升序' : '降序'}
           >
             {sortOrder === 'asc' ? '↑' : '↓'}
@@ -265,52 +243,52 @@ export default function RecordsPage() {
         {/* 記錄列表 */}
         {sortedRecords.length === 0 ? (
           <div className='py-8 text-center'>
-            <div className='mb-3 text-3xl'>📄</div>
-            <p className='text-sm text-foreground-muted'>尚無發票記錄</p>
+            <div className='mb-3 text-2xl'>📄</div>
+            <p className='text-xs text-foreground-muted'>尚無發票記錄</p>
           </div>
         ) : (
           <div className='space-y-3'>
             {sortedRecords.map((record) => (
               <div
                 key={record.id}
-                className='rounded-lg border border-grey-200 bg-white p-4 shadow-sm'
+                className='rounded-lg border border-grey-200 bg-white p-3 shadow-sm'
               >
-                <div className='mb-3 flex items-start justify-between'>
+                <div className='mb-2 flex items-start justify-between'>
                   <div className='flex-1'>
-                    <div className='mb-2 flex items-center gap-2'>
-                      {getCategoryIconElement(record.category, 'lg')}
-                      <h3 className='text-lg font-semibold text-foreground-primary'>
+                    <div className='mb-1.5 flex items-center gap-2'>
+                      {getCategoryIconElement(record.category, 'md')}
+                      <h3 className='text-base font-semibold text-foreground-primary'>
                         {record.storeName}
                       </h3>
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${getCategoryColor(record.category)}`}>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${getCategoryColor(record.category)}`}>
                         {getCategoryLabel(record.category)}
                       </span>
                     </div>
-                    <div className='mb-2 text-sm text-foreground-muted'>
+                    <div className='mb-1 text-xs text-foreground-muted'>
                       {new Date(record.date).toLocaleDateString('zh-TW')}
                     </div>
-                    <div className='text-sm text-foreground-muted'>
+                    <div className='text-xs text-foreground-muted'>
                       發票號碼：{record.invoiceNumber}
                     </div>
                   </div>
                   <div className='text-right'>
-                    <div className='text-lg font-semibold text-primary-600'>
+                    <div className='text-base font-semibold text-primary-600'>
                       {record.totalCO2.toFixed(2)} kg CO₂
                     </div>
-                    <div className='text-sm text-foreground-muted'>
+                    <div className='text-xs text-foreground-muted'>
                       NT$ {record.totalAmount.toLocaleString()}
                     </div>
                   </div>
                 </div>
 
                 {/* 商品列表 */}
-                <div className='mt-3 border-t border-grey-200 pt-3'>
-                  <div className='mb-2 text-xs font-semibold text-foreground-muted'>
+                <div className='mt-2 border-t border-grey-200 pt-2'>
+                  <div className='mb-1.5 text-[10px] font-semibold text-foreground-muted'>
                     商品 ({record.items.length})
                   </div>
-                  <div className='space-y-2'>
+                  <div className='space-y-1.5'>
                     {record.items.map((item, index) => (
-                      <div key={index} className='flex items-center justify-between text-sm'>
+                      <div key={index} className='flex items-center justify-between text-xs'>
                         <div className='flex items-center gap-2'>
                           <span className='text-foreground-primary'>{item.name}</span>
                           <span className='text-foreground-muted'>x{item.quantity}</span>
