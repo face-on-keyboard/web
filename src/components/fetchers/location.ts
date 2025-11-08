@@ -44,28 +44,29 @@ export function useLocation() {
     0
   )
 
-  const { data } = useMessage({
+  const { data, send } = useMessage({
     name: 'face_on_keyboard_location',
     validator: z.object({
       segments: z.array(locationSchema),
     }),
-    sendOnLoad: {
-      clear_after_fetch: true,
+    onMessage: (data) => {
+      for (const segment of data.segments) {
+        create(segment)
+      }
+
+      refetch()
+      setLastUpdatedAt(new Date().getTime())
     },
   })
 
   useEffect(() => {
     // Update every 5 minutes
     if (new Date().getTime() - lastUpdatedAt >= 1000 * 60 * 5) {
-      for (const segment of data?.segments || []) {
-        create(segment, {
-          onSuccess: () => setLastUpdatedAt(new Date().getTime()),
-        })
-      }
-
-      refetch()
+      send({
+        data: { clear_after_fetch: true },
+      })
     }
-  }, [data, lastUpdatedAt, create, refetch, setLastUpdatedAt])
+  }, [send, lastUpdatedAt])
 
   return { segments, isLoading, isCreating: isPending }
 }
