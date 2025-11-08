@@ -7,7 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import type { FeatureCollection } from 'geojson'
 
 export default function MapPage() {
-  const { data } = useLocation()
+  const { data, error } = useLocation()
 
   const segmentsGeoJson: FeatureCollection = {
     type: 'FeatureCollection',
@@ -40,20 +40,24 @@ export default function MapPage() {
   }
 
   return (
-    <MapLibre
-      initialViewState={{
-        longitude: 121.53846517738258,
-        latitude: 25.044896295744145,
-        zoom: 12,
-      }}
-      style={{ width: '100%', height: 'var(--screen-height-mobile)' }}
-      mapStyle='/assets/map.json'
-      maplibreLogo={false}
-      attributionControl={false}
-    >
-      <Source id='history-data' type='geojson' data={segmentsGeoJson}>
-        <Layer {...lineLayerStyle} />
-      </Source>
-    </MapLibre>
+    <>
+      <p className='absolute top-0 z-50'>{JSON.stringify(data)}</p>
+      <p className='absolute top-0 z-50'>{JSON.stringify(error)}</p>
+      <MapLibre
+        initialViewState={{
+          longitude: 121.53846517738258,
+          latitude: 25.044896295744145,
+          zoom: 12,
+        }}
+        style={{ width: '100%', height: 'var(--screen-height-mobile)' }}
+        mapStyle='/assets/map.json'
+        maplibreLogo={false}
+        attributionControl={false}
+      >
+        <Source id='history-data' type='geojson' data={segmentsGeoJson}>
+          <Layer {...lineLayerStyle} />
+        </Source>
+      </MapLibre>
+    </>
   )
 }
