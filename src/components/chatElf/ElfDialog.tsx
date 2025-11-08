@@ -22,14 +22,24 @@ export function ChatElf() {
 
 	// 每次組件載入時選擇對話文字
 	useEffect(() => {
+		// 只在客戶端執行
+		if (typeof window === 'undefined') return
+
 		// 獲取目標上限（從 localStorage，預設 226kg - 全台一週平均）
 		let carbonLimit = 226 // 預設值
 		try {
 			const carbonLimitStr = localStorage.getItem('carbonLimit')
 			if (carbonLimitStr) {
-				const parsed = JSON.parse(carbonLimitStr)
-				if (typeof parsed === 'number' && parsed > 0) {
+				// 嘗試解析為數字（可能是字符串格式的數字或 JSON 格式）
+				const parsed = Number.parseFloat(carbonLimitStr)
+				if (!Number.isNaN(parsed) && parsed > 0) {
 					carbonLimit = parsed
+				} else {
+					// 如果不是數字，嘗試 JSON 解析
+					const jsonParsed = JSON.parse(carbonLimitStr)
+					if (typeof jsonParsed === 'number' && jsonParsed > 0) {
+						carbonLimit = jsonParsed
+					}
 				}
 			}
 		} catch (error) {
