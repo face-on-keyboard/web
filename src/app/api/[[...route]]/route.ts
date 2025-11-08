@@ -64,6 +64,15 @@ const routes = app
 
     return c.json(success(createdSegment))
   })
+  .get('/invoices', async (c) => {
+    const invoices = await db.invoice.findMany({
+      include: {
+        details: true,
+      },
+    })
+
+    return c.json(success(invoices))
+  })
 
 export const GET = handle(app)
 export const PUT = handle(app)

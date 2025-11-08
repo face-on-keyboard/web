@@ -3,7 +3,7 @@
 import { z } from 'zod/v4'
 import { useMessage } from '../hooks/use-message'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { api } from './client'
+import { client } from './client'
 import { useCallback, useEffect, useRef } from 'react'
 import { locationSchema } from '@/lib/schemas'
 
@@ -11,7 +11,7 @@ const useSegments = () =>
   useQuery({
     queryKey: ['segments'],
     queryFn: async () => {
-      const response = await api.api.segments.$get()
+      const response = await client.api.segments.$get()
 
       if (!response.ok) {
         throw new Error('Failed to fetch segments')
@@ -25,7 +25,7 @@ const useCreateSegment = () =>
   useMutation({
     mutationKey: ['create-segment'],
     mutationFn: async (segment: z.infer<typeof locationSchema>) => {
-      const response = await api.api.segments.$put({ json: segment })
+      const response = await client.api.segments.$put({ json: segment })
 
       if (!response.ok) {
         throw new Error('Failed to create segment')

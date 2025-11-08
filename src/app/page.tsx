@@ -1,56 +1,14 @@
 'use client'
 
+import { useInvoices } from '@/components/fetchers/invoices'
 import { useEffect, useMemo, useState } from 'react'
-
-interface CarbonRecordItem {
-  name: string
-  amount: number
-  quantity: number
-  category: string
-  co2Amount: number
-}
-
-interface CarbonRecord {
-  id: string
-  invoiceNumber: string
-  date: string
-  storeName: string
-  totalAmount: number
-  category: string
-  totalCO2: number
-  items: CarbonRecordItem[]
-}
-
-const CARBON_CATEGORIES = [
-  {
-    value: 'food',
-    label: '食物',
-    icon: '/icons/eat.svg',
-    iconType: 'image',
-    color: 'bg-green-100 text-green-700',
-  },
-  {
-    value: 'shopping',
-    label: '購物',
-    icon: '/icons/shopping.svg',
-    iconType: 'image',
-    color: 'bg-purple-100 text-purple-700',
-  },
-  {
-    value: 'transport',
-    label: '交通',
-    icon: '/icons/transport.svg',
-    iconType: 'image',
-    color: 'bg-blue-100 text-blue-700',
-  },
-  {
-    value: 'other',
-    label: '其他',
-    icon: '/icons/other.svg',
-    iconType: 'image',
-    color: 'bg-grey-100 text-grey-700',
-  },
-]
+import type { CarbonRecord } from '@/lib/carbon-records'
+import {
+  CARBON_CATEGORIES,
+  getCategoryLabel,
+  getCategoryColor,
+  getCategoryIconElement,
+} from '@/lib/carbon-records'
 
 export default function HomePage() {
   const [records, setRecords] = useState<CarbonRecord[]>([])
@@ -58,29 +16,23 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
 
-  const fetchInvoices = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await fetch('/api/invoices')
+  const { data: invoices, isLoading, isError } = useInvoices()
 
-      if (!response.ok) {
-        throw new Error('無法獲取統一發票數據')
-      }
-
-      const data = await response.json()
-      setRecords(data.records || [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '發生未知錯誤')
-      console.error('Error fetching invoices:', err)
-    } finally {
+  // Use the transformed data from the hook
+  useEffect(() => {
+    if (invoices) {
+      setRecords(invoices)
       setLoading(false)
     }
-  }
+    if (isError) {
+      setError('無法獲取統一發票數據')
+      setLoading(false)
+    }
+  }, [invoices, isError])
 
   useEffect(() => {
-    fetchInvoices()
-  }, [])
+    setLoading(isLoading)
+  }, [isLoading])
 
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecords((prev) => {
@@ -171,59 +123,6 @@ export default function HomePage() {
       isIncrease: difference > 0,
     }
   }, [records])
-
-  // 這個函數已棄用，請使用 getCategoryIconElement
-  const getCategoryIcon = (categoryValue: string) => {
-    const category = CARBON_CATEGORIES.find((c) => c.value === categoryValue)
-    return category?.icon || '📝'
-  }
-
-  const getCategoryIconElement = (
-    categoryValue: string,
-    size: 'sm' | 'md' | 'lg' = 'md'
-  ) => {
-    const category = CARBON_CATEGORIES.find((c) => c.value === categoryValue)
-    if (!category) return <span className='text-lg'>📝</span>
-
-    const sizeClasses = {
-      sm: 'h-4 w-4',
-      md: 'h-5 w-5',
-      lg: 'h-6 w-6',
-    }
-
-    // 如果使用圖片圖標
-    if (category.iconType === 'image') {
-      return (
-        <img
-          src={category.icon}
-          alt={category.label}
-          className={`${sizeClasses[size]} object-contain`}
-        />
-      )
-    }
-
-    // 使用 emoji
-    const emojiSizes = {
-      sm: 'text-base',
-      md: 'text-lg',
-      lg: 'text-xl',
-    }
-    return <span className={emojiSizes[size]}>{category.icon}</span>
-  }
-
-  const getCategoryLabel = (categoryValue: string) => {
-    return (
-      CARBON_CATEGORIES.find((c) => c.value === categoryValue)?.label ||
-      categoryValue
-    )
-  }
-
-  const getCategoryColor = (categoryValue: string) => {
-    return (
-      CARBON_CATEGORIES.find((c) => c.value === categoryValue)?.color ||
-      'bg-grey-100 text-grey-700'
-    )
-  }
 
   return (
     <main className='min-h-screen bg-background-muted px-3 py-4'>
