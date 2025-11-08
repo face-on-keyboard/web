@@ -20,7 +20,8 @@
     "postinstall": "prisma generate",
     "preview": "next build && next start",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "mock:invoice": "tsx mock/server.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
