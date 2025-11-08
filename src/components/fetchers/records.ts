@@ -96,6 +96,35 @@ export function useRecords() {
     }
   }, [records])
 
+  const weeklyCO2 = useMemo(() => {
+    const now = new Date()
+    const dayOfWeek = now.getDay() // 0 = 星期日, 1 = 星期一, ...
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - dayOfWeek) // 設定為本週第一天（星期日）
+    startOfWeek.setHours(0, 0, 0, 0)
+
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6) // 本週最後一天
+    endOfWeek.setHours(23, 59, 59, 999)
+
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+
+    const startStr = formatDate(startOfWeek)
+    const endStr = formatDate(endOfWeek)
+
+    return records
+      ?.filter((record) => {
+        const recordDate = record.date
+        return recordDate >= startStr && recordDate <= endStr
+      })
+      .reduce((sum, record) => sum + record.totalCO2, 0)
+  }, [records])
+
   return {
     records,
     loading,
@@ -108,5 +137,6 @@ export function useRecords() {
     totalCO2,
     categoryStats,
     monthlyStats,
+    weeklyCO2,
   }
 }
