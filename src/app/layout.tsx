@@ -63,7 +63,7 @@ export default function RootLayout({
     >
       <body className='bg-blue-50/30'>
         <ReactQueryProvider>
-          <div className='min-h-[calc(100svh-var(--mobile-bar-full-height))] max-w-md bg-blue-50/30 text-black'>
+          <div className='min-h-[calc(100svh-var(--mobile-bar-full-height))] max-w-md bg-linear-to-tr from-primary-50 via-white to-secondary-100 text-black'>
             {children}
           </div>
           <ConditionalFloatingComponents />
