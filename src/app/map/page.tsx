@@ -33,21 +33,18 @@ export default function MapPage() {
     id: 'history',
     source: 'history-data',
     paint: {
-      'line-dasharray': [5, 5],
-      'line-width': 2,
+      'line-width': 5,
       'line-color': '#e7a43c', // --color-secondary-600
     },
   }
 
   return (
     <>
-      <p className='absolute top-0 z-50'>{JSON.stringify(data)}</p>
-      <p className='absolute top-0 z-50'>{JSON.stringify(error)}</p>
       <MapLibre
         initialViewState={{
-          longitude: 121.53846517738258,
-          latitude: 25.044896295744145,
-          zoom: 12,
+          longitude: 121.53571578876608,
+          latitude: 25.02147971575624,
+          zoom: 15,
         }}
         style={{ width: '100%', height: 'var(--screen-height-mobile)' }}
         mapStyle='/assets/map.json'
