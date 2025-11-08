@@ -11,6 +11,8 @@ import { ErrorBanner } from '../components/dashboard/ErrorBanner'
 import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
 import { useUser } from '@/components/fetchers/user'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'usehooks-ts'
 
 export default function HomePage() {
   const {
@@ -47,33 +49,38 @@ export default function HomePage() {
 
   const currentEmission = testEmission ?? dailyDelta.today
 
+  const { width, height } = useWindowSize()
+
   return (
-    <main className='min-h-screen px-3 py-4'>
-      <div className='mx-auto max-w-sm'>
-        <DashboardHeader />
-        <MonthlyComparisonCard stats={monthlyStats} />
-        <EarthStatusPanel
-          emissionValue={currentEmission}
-          baseEmission={dailyDelta.today}
-          testEmission={testEmission}
-          onTestEmissionChange={setTestEmission}
-        />
-        {error && <ErrorBanner message={error.message} />}
-        {/* <SummaryStatCards totalCO2={totalCO2} recordsCount={records.length} /> */}
-        <CategoryBreakdown
-          categoryStats={categoryStats}
-          totalCO2={totalCO2 ?? 0}
-        />
-        <RecentRecords
-          loading={loading}
-          records={records ?? []}
-          sortedRecords={sortedRecords}
-          recentRecords={recentRecords}
-          expandedRecords={expandedRecords}
-          onToggle={toggleRecordExpansion}
-          hasMoreRecords={hasMoreRecords}
-        />
-      </div>
-    </main>
+    <>
+      <Confetti width={width} height={height} recycle={false} />
+      <main className='min-h-screen px-3 py-4'>
+        <div className='mx-auto max-w-sm'>
+          <DashboardHeader />
+          <MonthlyComparisonCard stats={monthlyStats} />
+          <EarthStatusPanel
+            emissionValue={currentEmission}
+            baseEmission={dailyDelta.today}
+            testEmission={testEmission}
+            onTestEmissionChange={setTestEmission}
+          />
+          {error && <ErrorBanner message={error.message} />}
+          {/* <SummaryStatCards totalCO2={totalCO2} recordsCount={records.length} /> */}
+          <CategoryBreakdown
+            categoryStats={categoryStats}
+            totalCO2={totalCO2 ?? 0}
+          />
+          <RecentRecords
+            loading={loading}
+            records={records ?? []}
+            sortedRecords={sortedRecords}
+            recentRecords={recentRecords}
+            expandedRecords={expandedRecords}
+            onToggle={toggleRecordExpansion}
+            hasMoreRecords={hasMoreRecords}
+          />
+        </div>
+      </main>
+    </>
   )
 }
