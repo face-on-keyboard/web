@@ -20,13 +20,14 @@ export function ChatMessageBubble({
             : 'bg-primary-500 text-white'
         }`}
       >
-        <p className='whitespace-pre-wrap break-words text-sm leading-relaxed'>
+        <p className='wrap-break-word whitespace-pre-wrap text-sm leading-relaxed'>
           {message.content}
         </p>
 
         {/* 返回目錄按鈕 */}
         {message.showBackToMenu && isElf && onBackToMenu && (
           <button
+            type='button'
             onClick={onBackToMenu}
             className='mt-3 w-full rounded-lg border-2 border-primary-300 bg-primary-50 px-4 py-2 font-medium text-primary-600 text-sm transition-colors hover:border-primary-400 hover:bg-primary-100 active:scale-[0.98]'
           >
