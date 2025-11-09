@@ -2,25 +2,24 @@
 
 import { useEffect, useState } from 'react'
 
+import { WeeklyComparisonCard } from '@/components/dashboard/WeeklyComparisonCard'
 import { useHealth } from '@/components/fetchers/health'
 import { useRecords } from '@/components/fetchers/records'
+import { useCountup } from '@/components/hooks/use-countup'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'usehooks-ts'
-import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
 import { ErrorBanner } from '../components/dashboard/ErrorBanner'
-import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
-import { WeeklyComparisonCard } from '@/components/dashboard/WeeklyComparisonCard'
+import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 
 export default function HomePage() {
   const {
     records,
     loading,
     error,
-    dailyDelta,
     sortedRecords,
     recentRecords,
     hasMoreRecords,
@@ -60,7 +59,9 @@ export default function HomePage() {
     })
   }
 
-  const currentEmission = testEmission ?? weeklyStats.currentWeek
+  const currentEmission = useCountup(weeklyStats.currentWeek, 100000)
+
+  console.log(currentEmission)
 
   const { width, height } = useWindowSize()
 
@@ -77,8 +78,8 @@ export default function HomePage() {
           <WeeklyComparisonCard stats={weeklyStats} />
           <EarthStatusPanel
             emissionValue={currentEmission}
-            baseEmission={weeklyStats.currentWeek}
-            testEmission={testEmission}
+            baseEmission={currentEmission}
+            testEmission={null}
             onTestEmissionChange={setTestEmission}
           />
           {error && <ErrorBanner message={error.message} />}
