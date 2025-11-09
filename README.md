@@ -1,4 +1,4 @@
-# City of the Future 🌍
+# Carbon Notebook 🌍
 
 > A carbon footprint tracking application designed to help citizens in future cities reduce their environmental impact through automated emission calculations and interactive engagement mechanisms.
 
@@ -173,4 +173,4 @@ Only matches with similarity scores ≥ 0.3 are considered valid.
 
 ## Acknowledgments
 
-This project is part of the "City of the Future" initiative, aimed at creating sustainable urban solutions through technology.
+This project is part of the "Carbon Notebook" initiative, aimed at creating sustainable urban solutions through technology.
