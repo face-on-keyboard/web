@@ -7,6 +7,7 @@ export const locationSchema = z.object({
   end_x: z.number(),
   end_y: z.number(),
   end_time: z.string(),
+  estimated_co2: z.number().optional(),
 })
 
 export const faceOnKeyboardHealthSchema = z.object({

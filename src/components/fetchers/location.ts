@@ -1,23 +1,32 @@
 'use client'
 
-import { z } from 'zod/v4'
-import { useMessage } from '../hooks/use-message'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { client } from './client'
 import { useCallback, useEffect, useRef } from 'react'
+
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { z } from 'zod/v4'
+
 import { locationSchema } from '@/lib/schemas'
+import type { TravelSegment } from '@/lib/travel'
+
+import { client } from './client'
+import { useMessage } from '../hooks/use-message'
+
+type SegmentsResponse = {
+  data: TravelSegment[]
+}
 
 const useSegments = () =>
   useQuery({
     queryKey: ['segments'],
-    queryFn: async () => {
+    queryFn: async (): Promise<TravelSegment[]> => {
       const response = await client.api.segments.$get()
 
       if (!response.ok) {
         throw new Error('Failed to fetch segments')
       }
 
-      return (await response.json()).data
+      const payload = (await response.json()) as SegmentsResponse
+      return payload.data
     },
   })
 
@@ -45,7 +54,7 @@ export function useLocation() {
       console.log(
         '[useLocation] received face_on_keyboard_location',
         data?.segments?.length ?? 0,
-        data
+        data,
       )
       for (const segment of data.segments) {
         create(segment)
@@ -53,7 +62,7 @@ export function useLocation() {
 
       refetch()
     },
-    [create, refetch]
+    [create, refetch],
   )
 
   const { send } = useMessage({
