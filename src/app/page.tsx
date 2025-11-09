@@ -1,25 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { WeeklyComparisonCard } from '@/components/dashboard/WeeklyComparisonCard'
 import { useHealth } from '@/components/fetchers/health'
 import { useRecords } from '@/components/fetchers/records'
+import { useCountup } from '@/components/hooks/use-countup'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'usehooks-ts'
 import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { EarthStatusPanel } from '../components/dashboard/EarthStatusPanel'
 import { ErrorBanner } from '../components/dashboard/ErrorBanner'
-import { MonthlyComparisonCard } from '../components/dashboard/MonthlyComparisonCard'
 import { RecentRecords } from '../components/dashboard/RecentRecords'
-import { WeeklyComparisonCard } from '@/components/dashboard/WeeklyComparisonCard'
+import { OnboardingModal } from '../components/onboarding/OnboardingModal'
 
 export default function HomePage() {
   const {
     records,
     loading,
     error,
-    dailyDelta,
     sortedRecords,
     recentRecords,
     hasMoreRecords,
@@ -34,6 +34,18 @@ export default function HomePage() {
 
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
   const [testEmission, setTestEmission] = useState<number | null>(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  // 檢查是否已完成 onboarding
+  useEffect(() => {
+    // 只在客戶端執行
+    if (typeof window !== 'undefined') {
+      const onboardingCompleted = localStorage.getItem('onboardingCompleted')
+      if (onboardingCompleted !== 'true') {
+        setShowOnboarding(true)
+      }
+    }
+  }, [])
 
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecords((prev) => {
@@ -47,21 +59,27 @@ export default function HomePage() {
     })
   }
 
-  const currentEmission = testEmission ?? dailyDelta.today
+  const currentEmission = useCountup(weeklyStats.currentWeek, 100000)
+
+  console.log(currentEmission)
 
   const { width, height } = useWindowSize()
 
   return (
     <>
       <Confetti width={width} height={height} recycle={false} />
-      <main className='min-h-screen px-3 py-4'>
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
+      <main className='min-h-screen bg-blue-50/30 px-3 py-4'>
         <div className='mx-auto max-w-sm'>
           <DashboardHeader />
           <WeeklyComparisonCard stats={weeklyStats} />
           <EarthStatusPanel
             emissionValue={currentEmission}
-            baseEmission={dailyDelta.today}
-            testEmission={testEmission}
+            baseEmission={currentEmission}
+            testEmission={null}
             onTestEmissionChange={setTestEmission}
           />
           {error && <ErrorBanner message={error.message} />}

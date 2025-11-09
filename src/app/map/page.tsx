@@ -9,9 +9,10 @@ import type {
 import 'maplibre-gl/dist/maplibre-gl.css'
 import type { FeatureCollection } from 'geojson'
 import maplibregl from 'maplibre-gl'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { renderToString } from 'react-dom/server'
 import { FeaturePopup } from '@/components/map-popup'
+import { useHealth } from '@/components/fetchers/health'
 
 export default function MapPage() {
   const { segments } = useLocation()
@@ -35,6 +36,8 @@ export default function MapPage() {
       })) ?? [],
   }
 
+  const { health } = useHealth()
+
   const segmentsLineLayer: LineLayerSpecification = {
     type: 'line',
     id: 'history',
@@ -57,8 +60,100 @@ export default function MapPage() {
     },
   }
 
+  const [expandList, setExpandList] = useState<boolean>(false)
+
   return (
     <>
+      <div
+        className={`absolute top-0 z-50 h-[165px] w-full bg-primary-50 shadow ${
+          expandList ? 'h-[400px]' : ''
+        }`}
+      >
+        <div className='space-y-4 py-2'>
+          交通產生的碳排
+          <div className='flex items-center space-x-2'>
+            <div className='h-3 w-[250px] rounded-full bg-gray-200'>
+              <div
+                className='h-3 rounded-full bg-red-500'
+                style={{
+                  width: `${Math.min(
+                    ((segments?.reduce(
+                      (acc, segment) => acc + segment.estimatedCO2,
+                      0
+                    ) || 0) /
+                      (((health?.steps ?? 0) * 1.42) / 1000 || 1)) *
+                      100,
+                    100
+                  )}%`,
+                }}
+              />
+            </div>
+            <div className='font-medium text-sm'>
+              {segments
+                ?.reduce((acc, segment) => acc + segment.estimatedCO2, 0)
+                .toFixed(2)}{' '}
+              kg
+            </div>
+          </div>
+          步行減碳
+          <div className='flex items-center space-x-2'>
+            <div className='h-3 w-[250px] rounded-full bg-gray-200'>
+              <div
+                className='h-3 rounded-full bg-green-500'
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div className='font-medium text-sm'>
+              {(((health?.steps ?? 0) * 1.42) / 1000).toFixed(2)} kg ·{' '}
+              {health?.steps} 步
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => setExpandList(!expandList)}
+          className='mt-3 font-medium text-primary-600 text-sm transition-colors hover:text-primary-700'
+          type='button'
+        >
+          {expandList ? '▲ 收起' : '▼ 展開'}紀錄列表
+        </button>
+        {expandList && (
+          <div className='mt-3 max-h-[200px] space-y-2 overflow-y-auto'>
+            {segments?.map((segment) => (
+              <div
+                key={segment.id}
+                className='rounded-lg border border-gray-100 bg-white p-3 shadow-sm transition-shadow hover:shadow-md'
+              >
+                <div className='flex items-start justify-between'>
+                  <div className='flex-1'>
+                    <div className='mb-1 text-gray-500 text-xs'>
+                      {new Date(segment.fromTime).toLocaleString('zh-TW', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                      {' → '}
+                      {new Date(segment.toTime).toLocaleString('zh-TW', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                    <div className='text-caption text-foreground-muted'>
+                      {segment.travelMode}
+                    </div>
+                  </div>
+                  <div className='text-right'>
+                    <div className='font-semibold text-red-600 text-sm'>
+                      {segment.estimatedCO2.toFixed(2)} kg
+                    </div>
+                    <div className='text-gray-400 text-xs'>CO₂</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       <MapLibre
         initialViewState={{
           longitude: 121.53571578876608,

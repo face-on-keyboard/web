@@ -133,7 +133,10 @@ export async function calculateProductCarbonFootprint(
 
   // 計算碳足跡 = 碳足跡數值 * 數量
   const carbonFootprintValue = Number(match.carbonFootprintValue)
-  const totalCarbonFootprint = carbonFootprintValue * quantity
+  const totalCarbonFootprint =
+    carbonFootprintValue *
+    quantity *
+    (match.carbonFootprintUnit === 'g' ? 0.001 : 1)
 
   return {
     success: true,
