@@ -41,13 +41,6 @@ Interactive Earth status system reflecting daily carbon emissions:
 - Interactive environmental assistant ("Elf")
 - Personalized recommendations for reducing carbon footprint
 
-### 📱 Smart Features
-
-- **AI Text Similarity Matching**: Matches product names from invoices with carbon-labeled products using multiple algorithms (exact match, contains match, Dice coefficient, word matching)
-- **Travel Mode Detection**: Automatically detects travel modes (walking, biking, scooter, car) based on GPS speed
-- **Invoice Integration**: Parses electronic invoices to calculate purchase-related emissions
-- **GPS & Health Kit Integration**: Tracks location and physical activity data
-
 ## Technology Stack
 
 - **Framework**: Next.js 15 (App Router)
@@ -134,42 +127,12 @@ pnpm dev
 
 The application will be available at `http://localhost:3000`.
 
-## Database Models
+## Database Tables
 
 - **Invoice**: Electronic invoice/receipt data
 - **InvoiceDetail**: Individual items from invoices
 - **CarbonLabel**: Carbon-labeled products database for matching purchases
 - **Segments**: Travel segments with GPS coordinates, timestamps, travel mode, and CO₂ emissions
-
-## Carbon Calculation
-
-### Transportation Emissions
-
-Travel mode detection based on GPS speed:
-
-- **Walking** (< 5 km/h): 0 kg CO₂/km
-- **Biking** (5–25 km/h): 0.1 kg CO₂/km
-- **Scooter** (25–80 km/h): 0.2 kg CO₂/km
-- **Car** (> 80 km/h): 0.5 kg CO₂/km
-
-Distance is calculated using geospatial calculations, and emissions are computed by multiplying distance by the emission factor for the detected mode.
-
-### Purchase Emissions
-
-Uses AI text similarity matching to match product names from invoices with carbon-labeled products:
-
-- **Exact Match**: Perfect string matches (score: 1.0)
-- **Contains Match**: Substring matching (0.8-1.0)
-- **Dice Coefficient**: Bigram similarity (threshold: > 0.6)
-- **Word Matching**: Common word detection (score: 0.7 × word ratio)
-
-Only matches with similarity scores ≥ 0.3 are considered valid.
-
-## Development
-
-- **Code Quality**: Uses Biome for formatting and linting (`pnpm check:write`)
-- **Database**: Prisma Studio (`pnpm db:studio`) for database inspection
-- **API**: Built with Hono, located in `src/app/api/`
 
 ## Acknowledgments
 
