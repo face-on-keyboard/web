@@ -13,6 +13,8 @@ import { useEffect, useState } from 'react'
 import { renderToString } from 'react-dom/server'
 import { FeaturePopup } from '@/components/map-popup'
 import { useHealth } from '@/components/fetchers/health'
+import { TravelMode } from '@prisma/client'
+import { carEmissionMultiplier } from '@/lib/speed'
 
 export default function MapPage() {
   const { segments } = useLocation()
@@ -32,20 +34,55 @@ export default function MapPage() {
         properties: {
           start: segment.fromTime,
           end: segment.toTime,
+          travelMode: segment.travelMode,
         },
       })) ?? [],
   }
 
   const { health } = useHealth()
 
-  const segmentsLineLayer: LineLayerSpecification = {
+  const segmentsLineWalkLayer: LineLayerSpecification = {
     type: 'line',
-    id: 'history',
+    id: 'history-walk',
     source: 'history-data',
     paint: {
       'line-width': 5,
-      'line-color': '#468D9B', // --color-primary-600
+      'line-color': '#468d9b', // --color-primary-600
     },
+    filter: ['==', ['get', 'travelMode'], TravelMode.WALK],
+  }
+
+  const segmentsLineBikeLayer: LineLayerSpecification = {
+    type: 'line',
+    id: 'history-bike',
+    source: 'history-data',
+    paint: {
+      'line-width': 5,
+      'line-color': '#22474e', // --color-primary-800
+    },
+    filter: ['==', ['get', 'travelMode'], TravelMode.BIKE],
+  }
+
+  const segmentsLineScooterLayer: LineLayerSpecification = {
+    type: 'line',
+    id: 'history-scooter',
+    source: 'history-data',
+    paint: {
+      'line-width': 5,
+      'line-color': '#e7a43c', // --color-secondary-600
+    },
+    filter: ['==', ['get', 'travelMode'], TravelMode.SCOOTER],
+  }
+
+  const segmentsLineCarLayer: LineLayerSpecification = {
+    type: 'line',
+    id: 'history-car',
+    source: 'history-data',
+    paint: {
+      'line-width': 5,
+      'line-color': '#74521b', // --color-secondary-600
+    },
+    filter: ['==', ['get', 'travelMode'], TravelMode.CAR],
   }
 
   const segmentEndpointsLayer: CircleLayerSpecification = {
@@ -65,11 +102,11 @@ export default function MapPage() {
   return (
     <>
       <div
-        className={`absolute top-0 z-50 h-[165px] w-full bg-primary-50 shadow ${
+        className={`absolute top-0 z-50 h-[190px] w-full bg-primary-50 shadow ${
           expandList ? 'h-[400px]' : ''
         }`}
       >
-        <div className='space-y-4 py-2'>
+        <div className='space-y-3 py-2'>
           交通產生的碳排
           <div className='flex items-center space-x-2'>
             <div className='h-3 w-[250px] rounded-full bg-gray-200'>
@@ -108,10 +145,18 @@ export default function MapPage() {
               {health?.steps} 步
             </div>
           </div>
+          <div className='flex w-full justify-end font-bold text-body'>
+            相當開車同距離{' '}
+            {(
+              (((health?.steps ?? 0) * 1.42) / 1000) *
+              carEmissionMultiplier
+            ).toFixed(2)}{' '}
+            kg CO₂
+          </div>
         </div>
         <button
           onClick={() => setExpandList(!expandList)}
-          className='mt-3 font-medium text-primary-600 text-sm transition-colors hover:text-primary-700'
+          className='mt-3 flex w-full justify-end font-medium text-primary-600 text-sm transition-colors hover:text-primary-700'
           type='button'
         >
           {expandList ? '▲ 收起' : '▼ 展開'}紀錄列表
@@ -166,7 +211,10 @@ export default function MapPage() {
         attributionControl={false}
       >
         <Source id='history-data' type='geojson' data={segmentsGeoJson}>
-          <Layer {...segmentsLineLayer} />
+          <Layer {...segmentsLineWalkLayer} />
+          <Layer {...segmentsLineBikeLayer} />
+          <Layer {...segmentsLineCarLayer} />
+          <Layer {...segmentsLineScooterLayer} />
           <Layer {...segmentEndpointsLayer} />
         </Source>
         <Overlays />
