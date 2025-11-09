@@ -63,34 +63,32 @@ export const EarthStatusPanel = ({
 
       <EarthStatus emissionValue={emissionValue} />
 
-      {testEmission && (
-        <div className='mt-5'>
-          <label
-            htmlFor='emission-test-slider'
-            className='mb-1 flex items-center justify-between text-foreground-muted text-xs'
-          >
-            <span>測試用碳排量調整軸</span>
-            <span>{sliderValue.toFixed(1)} kg</span>
-          </label>
-          <input
-            id='emission-test-slider'
-            type='range'
-            min={SLIDER_MIN}
-            max={SLIDER_MAX}
-            step={SLIDER_STEP}
-            value={sliderValue}
-            onChange={handleSliderChange}
-            className='h-2 w-full cursor-pointer appearance-none rounded-full bg-grey-100 accent-primary-500'
-          />
-          <div className='mt-2 flex justify-between text-[11px] text-foreground-muted'>
-            <span>{SLIDER_MIN}</span>
-            <span>{SLIDER_MAX}</span>
-          </div>
-          <p className='mt-2 text-foreground-muted text-xs'>
-            拖曳滑桿即可模擬不同碳排狀況，觀察地球圖示即時變化。
-          </p>
+      <div className='mt-5'>
+        <label
+          htmlFor='emission-test-slider'
+          className='mb-1 flex items-center justify-between text-foreground-muted text-xs'
+        >
+          <span>測試用碳排量調整軸</span>
+          <span>{sliderValue.toFixed(1)} kg</span>
+        </label>
+        <input
+          id='emission-test-slider'
+          type='range'
+          min={SLIDER_MIN}
+          max={SLIDER_MAX}
+          step={SLIDER_STEP}
+          value={sliderValue}
+          onChange={handleSliderChange}
+          className='h-2 w-full cursor-pointer appearance-none rounded-full bg-grey-100 accent-primary-500'
+        />
+        <div className='mt-2 flex justify-between text-[11px] text-foreground-muted'>
+          <span>{SLIDER_MIN}</span>
+          <span>{SLIDER_MAX}</span>
         </div>
-      )}
+        <p className='mt-2 text-foreground-muted text-xs'>
+          拖曳滑桿即可模擬不同碳排狀況，觀察地球圖示即時變化。
+        </p>
+      </div>
     </section>
   )
 }

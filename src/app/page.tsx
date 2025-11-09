@@ -33,7 +33,7 @@ export default function HomePage() {
   console.log('[HomePage] health', health)
 
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
-  const [testEmission, setTestEmission] = useState<number | null>(null)
+  const [testEmission, setTestEmission] = useState<number | null>(0)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
   // 檢查是否已完成 onboarding
@@ -59,7 +59,7 @@ export default function HomePage() {
     })
   }
 
-  const currentEmission = useCountup(weeklyStats.currentWeek, 100000)
+  const currentEmission = testEmission
 
   console.log(currentEmission)
 
