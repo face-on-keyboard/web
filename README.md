@@ -1,5 +1,7 @@
 # Carbon Notebook 🌍
 
+<img width="441" height="710" alt="image" src="https://github.com/user-attachments/assets/6fb335b7-86f1-437e-afc3-2fed0fd13127" />
+
 > A carbon footprint tracking application designed to help citizens in future cities reduce their environmental impact through automated emission calculations and interactive engagement mechanisms.
 
 ## Overview
